@@ -1,0 +1,12 @@
+﻿
+namespace User_Management_System.Repositories.IRepository
+{
+    public interface IUnitOfWork
+    {
+        IUserRoleRepository UserRoles { get; }
+
+        IUserRepository Users { get; }
+
+        string GenrateAlphaNumricUniqueCode();
+    }
+}
