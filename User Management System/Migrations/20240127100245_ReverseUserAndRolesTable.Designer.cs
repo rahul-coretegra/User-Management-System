@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using User_Management_System.DbModule;
@@ -11,9 +12,10 @@ using User_Management_System.DbModule;
 namespace User_Management_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240127100245_ReverseUserAndRolesTable")]
+    partial class ReverseUserAndRolesTable
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -57,7 +59,10 @@ namespace User_Management_System.Migrations
 
             modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserAndRoles", b =>
                 {
-                    b.Property<string>("userAndRoleUniqueId")
+                    b.Property<string>("userUniqueCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("roleUniqueCode")
                         .HasColumnType("text");
 
                     b.Property<int>("accessToRole")
@@ -69,19 +74,12 @@ namespace User_Management_System.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
 
-                    b.Property<string>("roleUniqueCode")
-                        .IsRequired()
+                    b.Property<string>("userAndRoleUniqueId")
                         .HasColumnType("text");
 
-                    b.Property<string>("userUniqueCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("userAndRoleUniqueId");
+                    b.HasKey("userUniqueCode", "roleUniqueCode");
 
                     b.HasIndex("roleUniqueCode");
-
-                    b.HasIndex("userUniqueCode");
 
                     b.ToTable("UserAndUserRoles");
                 });

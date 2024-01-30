@@ -1,6 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 using User_Management_System.Models.EnumModels;
+using User_Management_System.Models.UserModels;
 
 namespace User_Management_System.Models.SupremeModels
 {

@@ -7,6 +7,12 @@ namespace User_Management_System.Repositories.IRepository
 
         IUserRepository Users { get; }
 
+        IUserAndRolesRepository UserAndRoles { get; }
+
+        IUserVerificationRepository UserVerifications { get; }
+
+        IRoleAndAccessRepository RoleAndAccess { get; }
+
         string GenrateAlphaNumricUniqueCode();
     }
 }
