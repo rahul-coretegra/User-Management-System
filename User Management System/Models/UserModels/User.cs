@@ -23,30 +23,30 @@ namespace User_Management_System.Models.UserModels
         [RegularExpression("^[789]\\d{9}$")]
         public string phoneNumber { get; set; }
 
-        public TrueFalse isVerifiedPhoneNumber { get; set; }
+        public List<UserAndRoles> userRoles { get; set; }
 
         [Required]
         [RegularExpression("^[a-z0-9+_.-]+@[a-z0-9.-]+$")]
         public string email { get; set; }
 
-        public TrueFalse isVerifiedEmail { get; set; }
-
         [Required]
         public string address { get; set; }
 
         [Required]
-        public string roleUniqueCode { get; set; }
-        public UserRole userRole { get; set; }
-
-        [Required]
         public string password { get; set; }
 
-        public TrueFalse isActiveUser { get; set; }
+        public TrueFalse isVerifiedEmail { get; set; }
+
+        public TrueFalse isVerifiedPhoneNumber { get; set; }
 
         public string token { get; set; }
+
+        public TrueFalse isActiveUser { get; set; }
 
         public DateTime? createdAt { get; set; }
 
         public DateTime? updatedAt { get; set; }
+
+
     }
 }

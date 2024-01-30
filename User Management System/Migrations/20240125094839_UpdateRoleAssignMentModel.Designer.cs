@@ -2,6 +2,7 @@
 using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 using User_Management_System.DbModule;
@@ -11,9 +12,10 @@ using User_Management_System.DbModule;
 namespace User_Management_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20240125094839_UpdateRoleAssignMentModel")]
+    partial class UpdateRoleAssignMentModel
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -55,37 +57,6 @@ namespace User_Management_System.Migrations
                     b.ToTable("RoleAndAccess");
                 });
 
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserAndRoles", b =>
-                {
-                    b.Property<string>("userAndRoleUniqueId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("accessToRole")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
-
-                    b.Property<string>("roleUniqueCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("userUniqueCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("userAndRoleUniqueId");
-
-                    b.HasIndex("roleUniqueCode");
-
-                    b.HasIndex("userUniqueCode");
-
-                    b.ToTable("UserAndUserRoles");
-                });
-
             modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserRole", b =>
                 {
                     b.Property<string>("roleUniqueCode")
@@ -108,6 +79,33 @@ namespace User_Management_System.Migrations
                     b.HasKey("roleUniqueCode");
 
                     b.ToTable("UserRoles");
+                });
+
+            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserRoleAssignment", b =>
+                {
+                    b.Property<string>("userUniqueCode")
+                        .HasColumnType("text");
+
+                    b.Property<string>("roleUniqueCode")
+                        .HasColumnType("text");
+
+                    b.Property<int>("accessToRole")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("assignmentUniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
+
+                    b.HasKey("userUniqueCode", "roleUniqueCode");
+
+                    b.HasIndex("roleUniqueCode");
+
+                    b.ToTable("UserRoleAssignments");
                 });
 
             modelBuilder.Entity("User_Management_System.Models.UserModels.User", b =>
@@ -199,7 +197,7 @@ namespace User_Management_System.Migrations
                     b.Navigation("userRole");
                 });
 
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserAndRoles", b =>
+            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserRoleAssignment", b =>
                 {
                     b.HasOne("User_Management_System.Models.SupremeModels.UserRole", "userRole")
                         .WithMany()
