@@ -6,6 +6,7 @@ using User_Management_System.Models.EnumModels;
 using User_Management_System.Models.SupremeModels;
 using User_Management_System.Models.UserModels;
 using User_Management_System.Models.UserModels.UserVM;
+using User_Management_System.OutlookSmtpConfigurations;
 using User_Management_System.Repositories.IRepository;
 using User_Management_System.Repositories.RegisterAndAuthenticate;
 using User_Management_System.SD;
@@ -21,13 +22,16 @@ namespace User_Management_System.Controllers.UserControllers
         private readonly IUnitOfWork _iunitofwork;
         private readonly IRegisterAndAuthenticateRepository _auth;
         private readonly ITwilioRepository _twilio;
+        private readonly IOutlookSmtpRepository _outlook;
 
         public RegisterAndAuthenticateController(IUnitOfWork unitofwork,
-            IRegisterAndAuthenticateRepository userauthenticationrepository, ITwilioRepository twilio)
+            IRegisterAndAuthenticateRepository userauthenticationrepository,
+            ITwilioRepository twilio,IOutlookSmtpRepository outlook)
         {
             _iunitofwork = unitofwork;
             _auth = userauthenticationrepository;
             _twilio = twilio;
+            _outlook = outlook;
         }
 
         [HttpPost(SDRoutes.RegisterUser)]
@@ -120,14 +124,61 @@ namespace User_Management_System.Controllers.UserControllers
             }
         }
 
+        [HttpPost(SDRoutes.SendOtpUsingOutlookSmtp)]
+        public async Task<IActionResult> SendOtpUsingOutlookSmtp([FromBody] UserVerification verificationVM)
+        {
+            try
+            {
+                var userindb = await _iunitofwork.Users.FirstOrDefaultAsync(u => u.email == verificationVM.identity);
+                if (userindb == null)
+                    return NotFound(new { message = "NotFound" });
+
+                if (userindb.isVerifiedEmail == TrueFalse.True)
+                    return Ok(new { message = "Already Verified" });
+                else
+                {
+                    var otp =await _outlook.SendEmail(userindb.email);
+                    var indb = await _iunitofwork.UserVerifications.FirstOrDefaultAsync(x => x.identity == userindb.email);
+                    if (indb == null)
+                    {
+                        UserVerification verification = new UserVerification()
+                        {
+                            identity = userindb.email,
+                            otp = otp,
+                            otpTimeStamp = DateTime.UtcNow,
+                        };
+                        await _iunitofwork.UserVerifications.AddAsync(verification);
+                    }
+                    else
+                    {
+                        await _iunitofwork.UserVerifications.UpdateAsync(indb.identity, async entity =>
+                        {
+                            entity.otp = otp;
+                            entity.otpTimeStamp = DateTime.UtcNow;
+                            await Task.CompletedTask;
+                        });
+                    }
+                    return Ok(new { message = "Message Sent" });
+                }
+
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Database Error" });
+            }
+        }
+
         [HttpPut(SDRoutes.VerifyEmailsAndMessages)]
         public async Task<IActionResult> VerifyEmailsAndMessages([FromBody] UserVerification verificationVM)
         {
             try
             {
                 var userindb = await _iunitofwork.Users.FirstOrDefaultAsync(u => u.email == verificationVM.identity || u.phoneNumber == verificationVM.identity);
-
-                var verificationindb = await _iunitofwork.UserVerifications.FirstOrDefaultAsync(v =>v.identity == userindb.phoneNumber);
+                if (userindb == null)
+                    return NotFound();
+                var verificationindb = await _iunitofwork.UserVerifications.FirstOrDefaultAsync(v => (v.identity == userindb.phoneNumber || v.identity == userindb.email) && v.otp == verificationVM.otp);
+                if (verificationindb == null)
+                    return NotFound();
 
                 if (_iunitofwork.UserVerifications.IsOtpExpired(verificationindb))
                     return BadRequest(new { message = "otp expired" });
@@ -136,15 +187,29 @@ namespace User_Management_System.Controllers.UserControllers
                     var isverified = await _iunitofwork.UserVerifications.IsVerified(verificationVM.identity, verificationVM.otp);
                     if (isverified)
                     {
-                        await _iunitofwork.Users.UpdateAsync(userindb.userUniqueCode, async entity =>
+                        if(verificationVM.identity == userindb.phoneNumber)
                         {
-                            entity.isVerifiedPhoneNumber = TrueFalse.True;
-                            if (entity.isVerifiedEmail == TrueFalse.True)
-                                entity.isActiveUser = TrueFalse.True;
-                            await Task.CompletedTask;
+                            await _iunitofwork.Users.UpdateAsync(userindb.userUniqueCode, async entity =>
+                            {
+                                entity.isVerifiedPhoneNumber = TrueFalse.True;
+                                if (entity.isVerifiedEmail == TrueFalse.True)
+                                    entity.isActiveUser = TrueFalse.True;
+                                await Task.CompletedTask;
+                            });
+                            await _iunitofwork.UserVerifications.RemoveAsync(verificationindb.identity);
 
-                        });
-                        await _iunitofwork.UserVerifications.RemoveAsync(verificationindb.identity);
+                        }
+                        else if (verificationVM.identity == userindb.email)
+                        {
+                            await _iunitofwork.Users.UpdateAsync(userindb.userUniqueCode, async entity =>
+                            {
+                                entity.isVerifiedEmail = TrueFalse.True;
+                                if (entity.isVerifiedPhoneNumber == TrueFalse.True)
+                                    entity.isActiveUser = TrueFalse.True;
+                                await Task.CompletedTask;
+                            });
+                            await _iunitofwork.UserVerifications.RemoveAsync(verificationindb.identity);
+                        }
                         return Ok(new { status = isverified });
 
                     }
