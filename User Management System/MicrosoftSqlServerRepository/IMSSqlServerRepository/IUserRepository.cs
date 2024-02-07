@@ -1,6 +1,6 @@
-﻿using User_Management_System.PostgreSqlModels;
+﻿using User_Management_System.MicrosoftSqlServerModels;
 
-namespace User_Management_System.PostgreSqlRepository.IPsqlRepository
+namespace User_Management_System.MicrosoftSqlServerRepository.IMSSqlServerRepository
 {
     public interface IUserRepository:IRepository<User>
     {

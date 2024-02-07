@@ -1,11 +1,9 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 using User_Management_System.ManagementModels;
 using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.ManagementModels.VMs;
 using User_Management_System.ManagementRepository.IManagementRepository;
-using User_Management_System.PostgreSqlModels;
 using User_Management_System.SD;
 
 namespace User_Management_System.Controllers.UserControllers
@@ -36,7 +34,15 @@ namespace User_Management_System.Controllers.UserControllers
                 var context = _dbContextConfigurations.configureDbContext(projectInDb);
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
-                    var indb = await context.PsqlUOW.Users.FirstOrDefaultAsync(d => d.PhoneNumber == Identity || d.Email == Identity || d.UserId == Identity, includeProperties: "UserRoles.UserRole");
+                    var indb = await context.psqlUnitOfWork.Users.FirstOrDefaultAsync(d => d.PhoneNumber == Identity || d.Email == Identity || d.UserId == Identity, includeProperties: "UserRoles.UserRole");
+
+                    if (indb == null)
+                        return NotFound(new { message = "NotFound" });
+                    return Ok(indb);
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    var indb = await context.mssqlUnitOfWork.Users.FirstOrDefaultAsync(d => d.PhoneNumber == Identity || d.Email == Identity || d.UserId == Identity, includeProperties: "UserRoles.UserRole");
 
                     if (indb == null)
                         return NotFound(new { message = "NotFound" });
@@ -64,11 +70,16 @@ namespace User_Management_System.Controllers.UserControllers
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
-                    var list = await context.PsqlUOW.Users.GetAllAsync(includeProperties: "UserRoles.UserRole");
+                    var list = await context.psqlUnitOfWork.Users.GetAllAsync(includeProperties: "UserRoles.UserRole");
+                    return Ok(list);
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    var list = await context.mssqlUnitOfWork.Users.GetAllAsync(includeProperties: "UserRoles.UserRole");
                     return Ok(list);
                 }
                 else
-                    return BadRequest();
+                    return Ok();
             }
             catch (Exception)
             {
@@ -91,11 +102,11 @@ namespace User_Management_System.Controllers.UserControllers
                 {
                     if (ModelState.IsValid)
                     {
-                        var isuniqueuser = await context.Psqlauthentication.IsUniqueUser(User.PhoneNumber, User.Email);
+                        var isuniqueuser = await context.psqlUnitOfWork.Users.IsUniqueUser(User.PhoneNumber, User.Email);
                         if (!isuniqueuser)
                             return NotFound(new { message = "Exists" });
                         var UserId = _management.UniqueId();
-                        User registerUser = new User
+                        PostgreSqlModels.User registerUser = new PostgreSqlModels.User
                         {
                             UserId = UserId,
                             UserName = User.UserName,
@@ -107,27 +118,63 @@ namespace User_Management_System.Controllers.UserControllers
                             Address = User.Address,
                             Password = User.Password,
                             CreatedAt = DateTime.UtcNow,
-                            UserRoles = new List<UserAndRoles>
+                            UserRoles = new List<PostgreSqlModels.UserAndRoles>
                             {
-                                new UserAndRoles
+                                new PostgreSqlModels.UserAndRoles
                                 {
                                     UniqueId = _management.UniqueId(),
                                     UserId = UserId,
-                                    RoleId = SDValues.IndividualRoleCode,
+                                    RoleId = SDValues.IndividualRoleId,
                                     AccessToRole = TrueFalse.True
                                 }
                             }
                         };
-                        await context.Psqlauthentication.RegisterUser(registerUser);
+                        await context.psqlUnitOfWork.Users.RegisterUser(registerUser);
+                        return Ok(new { message = "Created" });
+                    }
+                    else
+                        return BadRequest(new { message = "BadRequest" });
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    if (ModelState.IsValid)
+                    {
+                        var isuniqueuser = await context.mssqlUnitOfWork.Users.IsUniqueUser(User.PhoneNumber, User.Email);
+                        if (!isuniqueuser)
+                            return NotFound(new { message = "Exists" });
+                        var UserId = _management.UniqueId();
+                        MicrosoftSqlServerModels.User registerUser = new MicrosoftSqlServerModels.User
+                        {
+                            UserId = UserId,
+                            UserName = User.UserName,
+                            IsVerifiedPhoneNumber = TrueFalse.True,
+                            PhoneNumber = User.PhoneNumber,
+                            IsVerifiedEmail = TrueFalse.True,
+                            Email = User.Email,
+                            IsActiveUser = TrueFalse.True,
+                            Address = User.Address,
+                            Password = User.Password,
+                            CreatedAt = DateTime.UtcNow,
+                            UserRoles = new List<MicrosoftSqlServerModels.UserAndRoles>
+                            {
+                                new MicrosoftSqlServerModels.UserAndRoles
+                                {
+                                    UniqueId = _management.UniqueId(),
+                                    UserId = UserId,
+                                    RoleId = SDValues.IndividualRoleId,
+                                    AccessToRole = TrueFalse.True
+                                }
+                            }
+                        };
+                        await context.mssqlUnitOfWork.Users.RegisterUser(registerUser);
                         return Ok(new { message = "Created" });
                     }
                     else
                         return BadRequest(new { message = "BadRequest" });
                 }
                 else
-                {
                     return Ok();
-                }
+                
             }
             catch (Exception)
             {
@@ -150,9 +197,9 @@ namespace User_Management_System.Controllers.UserControllers
                     if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                     {
 
-                        var indb = await context.PsqlUOW.Users.GetAsync(User.UserId);
+                        var indb = await context.psqlUnitOfWork.Users.GetAsync(User.UserId);
 
-                        var inDbExists = await context.PsqlUOW.Users.FirstOrDefaultAsync(d => (d.PhoneNumber == User.PhoneNumber || d.Email == User.Email) && d.UserId != indb.UserId);
+                        var inDbExists = await context.psqlUnitOfWork.Users.FirstOrDefaultAsync(d => (d.PhoneNumber == User.PhoneNumber || d.Email == User.Email) && d.UserId != indb.UserId);
 
                         if (indb == null)
                             return NotFound(new { message = "NotFound" });
@@ -160,7 +207,7 @@ namespace User_Management_System.Controllers.UserControllers
                         if (inDbExists != null)
                             return BadRequest(new { message = "Data Not Available" });
 
-                        await context.PsqlUOW.Users.UpdateAsync(indb.UserId, async entity =>
+                        await context.psqlUnitOfWork.Users.UpdateAsync(indb.UserId, async entity =>
                         {
                             entity.UserName = User.UserName;
                             entity.Email = User.Email;
@@ -171,13 +218,13 @@ namespace User_Management_System.Controllers.UserControllers
                                 entity.IsActiveUser = User.IsActiveUser;
                             await Task.CompletedTask;
                         });
-                        var updateduser = await context.PsqlUOW.Users.FirstOrDefaultAsync(d => d.UserId == indb.UserId, includeProperties: "UserRoles.UserRole");
+                        var updateduser = await context.psqlUnitOfWork.Users.FirstOrDefaultAsync(d => d.UserId == indb.UserId, includeProperties: "UserRoles.UserRole");
 
                         if (updateduser.IsActiveUser == TrueFalse.False)
                         {
                             foreach (var UserRole in updateduser.UserRoles)
                             {
-                                await context.PsqlUOW.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
+                                await context.psqlUnitOfWork.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
                                 {
                                     entity.AccessToRole = TrueFalse.False;
                                     await Task.CompletedTask;
@@ -188,8 +235,8 @@ namespace User_Management_System.Controllers.UserControllers
                         {
                             foreach (var UserRole in updateduser.UserRoles)
                             {
-                                if(UserRole.RoleId == SDValues.IndividualRoleCode) {
-                                    await context.PsqlUOW.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
+                                if(UserRole.RoleId == SDValues.IndividualRoleId) {
+                                    await context.psqlUnitOfWork.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
                                     {
                                         entity.AccessToRole = TrueFalse.True;
                                         await Task.CompletedTask;
@@ -199,8 +246,61 @@ namespace User_Management_System.Controllers.UserControllers
                         }
                         return Ok(new { message = "Updated" });
                     }
+                    else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                    {
+
+                        var indb = await context.mssqlUnitOfWork.Users.GetAsync(User.UserId);
+
+                        var inDbExists = await context.mssqlUnitOfWork.Users.FirstOrDefaultAsync(d => (d.PhoneNumber == User.PhoneNumber || d.Email == User.Email) && d.UserId != indb.UserId);
+
+                        if (indb == null)
+                            return NotFound(new { message = "NotFound" });
+
+                        if (inDbExists != null)
+                            return BadRequest(new { message = "Data Not Available" });
+
+                        await context.mssqlUnitOfWork.Users.UpdateAsync(indb.UserId, async entity =>
+                        {
+                            entity.UserName = User.UserName;
+                            entity.Email = User.Email;
+                            entity.PhoneNumber = User.PhoneNumber;
+                            entity.Address = User.Address;
+                            entity.UpdatedAt = DateTime.UtcNow;
+                            if (indb.IsActiveUser != User.IsActiveUser)
+                                entity.IsActiveUser = User.IsActiveUser;
+                            await Task.CompletedTask;
+                        });
+                        var updateduser = await context.mssqlUnitOfWork.Users.FirstOrDefaultAsync(d => d.UserId == indb.UserId, includeProperties: "UserRoles.UserRole");
+
+                        if (updateduser.IsActiveUser == TrueFalse.False)
+                        {
+                            foreach (var UserRole in updateduser.UserRoles)
+                            {
+                                await context.mssqlUnitOfWork.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
+                                {
+                                    entity.AccessToRole = TrueFalse.False;
+                                    await Task.CompletedTask;
+                                });
+                            }
+                        }
+                        else if (updateduser.IsActiveUser == TrueFalse.True)
+                        {
+                            foreach (var UserRole in updateduser.UserRoles)
+                            {
+                                if (UserRole.RoleId == SDValues.IndividualRoleId)
+                                {
+                                    await context.mssqlUnitOfWork.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
+                                    {
+                                        entity.AccessToRole = TrueFalse.True;
+                                        await Task.CompletedTask;
+                                    });
+                                }
+                            }
+                        }
+                        return Ok(new { message = "Updated" });
+                    }
                     else
-                        return NotFound();
+                        return Ok();
                 }
                 else
                     return BadRequest(new { message = "BadRequest" });
@@ -226,23 +326,23 @@ namespace User_Management_System.Controllers.UserControllers
                 {
                     foreach (var userRole in UserRoles)
                     {
-                        var userRoleInDb = await context.PsqlUOW.UserAndRoles.FirstOrDefaultAsync(x => x.RoleId == userRole.RoleId && x.UserId == userRole.UserId);
+                        var userRoleInDb = await context.psqlUnitOfWork.UserAndRoles.FirstOrDefaultAsync(x => x.RoleId == userRole.RoleId && x.UserId == userRole.UserId);
 
                         if (userRoleInDb == null)
                         {
                             var UniqueId = _management.UniqueId();
-                            UserAndRoles addUserRole = new UserAndRoles()
+                            PostgreSqlModels.UserAndRoles addUserRole = new PostgreSqlModels.UserAndRoles()
                             {
                                 UniqueId = UniqueId,
                                 UserId = userRole.UserId,
                                 RoleId = userRole.RoleId,
                                 AccessToRole = TrueFalse.True
                             };
-                            await context.PsqlUOW.UserAndRoles.AddAsync(addUserRole);
+                            await context.psqlUnitOfWork.UserAndRoles.AddAsync(addUserRole);
                         }
                         else if (userRoleInDb.AccessToRole != userRole.AccessToRole)
                         {
-                            await context.PsqlUOW.UserAndRoles.UpdateAsync(userRoleInDb.UniqueId, async entity =>
+                            await context.psqlUnitOfWork.UserAndRoles.UpdateAsync(userRoleInDb.UniqueId, async entity =>
                             {
                                 entity.AccessToRole = userRole.AccessToRole;
                                 await Task.CompletedTask;
@@ -251,7 +351,37 @@ namespace User_Management_System.Controllers.UserControllers
                     }
                     return Ok(new { message = "Ok" });
                 }
-                else return BadRequest();
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    foreach (var userRole in UserRoles)
+                    {
+                        var userRoleInDb = await context.psqlUnitOfWork.UserAndRoles.FirstOrDefaultAsync(x => x.RoleId == userRole.RoleId && x.UserId == userRole.UserId);
+
+                        if (userRoleInDb == null)
+                        {
+                            var UniqueId = _management.UniqueId();
+                            MicrosoftSqlServerModels.UserAndRoles addUserRole = new MicrosoftSqlServerModels.UserAndRoles()
+                            {
+                                UniqueId = UniqueId,
+                                UserId = userRole.UserId,
+                                RoleId = userRole.RoleId,
+                                AccessToRole = TrueFalse.True
+                            };
+                            await context.mssqlUnitOfWork.UserAndRoles.AddAsync(addUserRole);
+                        }
+                        else if (userRoleInDb.AccessToRole != userRole.AccessToRole)
+                        {
+                            await context.mssqlUnitOfWork.UserAndRoles.UpdateAsync(userRoleInDb.UniqueId, async entity =>
+                            {
+                                entity.AccessToRole = userRole.AccessToRole;
+                                await Task.CompletedTask;
+                            });
+                        }
+                    }
+                    return Ok(new { message = "Ok" });
+                }
+                else 
+                    return Ok();
             }
             catch (Exception)
             {

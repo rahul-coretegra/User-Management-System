@@ -1,16 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
+using User_Management_System.MicrosoftSqlServerConfigurations;
+using User_Management_System.MicrosoftSqlServerRepository.IMSSqlServerRepository;
 using User_Management_System.PostgreSqlConfigurations;
-using User_Management_System.PostgreSqlRepository.IPsqlRepository;
 
-namespace User_Management_System.PostgreSqlRepository
+namespace User_Management_System.MicrosoftSqlServerRepository
 {
-    public class PsqlUnitOfWork : IPsqlUnitOfWork
+    public class MsSqlUnitOfWork: IMsSqlUnitOfWork
     {
-        private readonly PostgreSqlApplicationDbContext _context;
+        private readonly MicrosoftSqlServerApplicationDbContext _context;
         private readonly IOptions<AppSettings> _appsettings;
 
-        public PsqlUnitOfWork(PostgreSqlApplicationDbContext context, IOptions<AppSettings> settings)
+        public MsSqlUnitOfWork(MicrosoftSqlServerApplicationDbContext context, IOptions<AppSettings> settings)
         {
             _context = context;
             _appsettings = settings;
@@ -30,6 +30,5 @@ namespace User_Management_System.PostgreSqlRepository
         public IUserAndRolesRepository UserAndRoles { private set; get; }
 
         public IRoleAndAccessRepository RoleAndAccess { private set; get; }
-            
     }
 }

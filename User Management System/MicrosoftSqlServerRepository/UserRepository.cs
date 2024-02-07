@@ -1,32 +1,29 @@
-﻿
-using Microsoft.EntityFrameworkCore;
+﻿using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Microsoft.IdentityModel.Tokens;
-
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
-using User_Management_System.ManagementConfigurations;
-using User_Management_System.PostgreSqlConfigurations;
-using User_Management_System.PostgreSqlModels;
+using User_Management_System.MicrosoftSqlServerConfigurations;
+using User_Management_System.MicrosoftSqlServerModels;
+using User_Management_System.MicrosoftSqlServerRepository.IMSSqlServerRepository;
 
-namespace User_Management_System.PostgreSqlRepository.RegisterAndAuthenticate
+namespace User_Management_System.MicrosoftSqlServerRepository
 {
-    public class RegisterAndAuthenticationRepository : IRegisterAndAuthenticateRepository
+    public class UserRepository : Repository<User>, IUserRepository
     {
-        private readonly PostgreSqlApplicationDbContext _psqlcontext;
+        private readonly MicrosoftSqlServerApplicationDbContext _context;
         private readonly AppSettings _settings;
 
-        public RegisterAndAuthenticationRepository(PostgreSqlApplicationDbContext context, IOptions<AppSettings> settings)          
+
+        public UserRepository(MicrosoftSqlServerApplicationDbContext options, IOptions<AppSettings> settings) : base(options)
         {
-            _psqlcontext = context;
+            _context = options;
             _settings = settings.Value;
-
         }
-
         public async Task<bool> IsUniqueUser(string Phonenumber, string Email)
         {
-            var userindb = await _psqlcontext.Users.FirstOrDefaultAsync(x => x.PhoneNumber == Phonenumber || x.Email == Email);
+            var userindb = await _context.Users.FirstOrDefaultAsync(x => x.PhoneNumber == Phonenumber || x.Email == Email);
             if (userindb == null)
                 return true;
             return false;
@@ -34,8 +31,8 @@ namespace User_Management_System.PostgreSqlRepository.RegisterAndAuthenticate
 
         public async Task<string> Authenticate(string Identity, string RoleId)
         {
-            
-            var userindb = await _psqlcontext.Users.FirstOrDefaultAsync(x => x.PhoneNumber == Identity || x.UserId == Identity || x.Email == Identity);
+
+            var userindb = await _context.Users.FirstOrDefaultAsync(x => x.PhoneNumber == Identity || x.UserId == Identity || x.Email == Identity);
             if (userindb == null)
                 return null;
             //jwt
@@ -62,15 +59,9 @@ namespace User_Management_System.PostgreSqlRepository.RegisterAndAuthenticate
 
         public async Task<bool> RegisterUser(User user)
         {
-            await _psqlcontext.Users.AddAsync(user);
-            await _psqlcontext.SaveChangesAsync();
+            await _context.Users.AddAsync(user);
+            await _context.SaveChangesAsync();
             return true;
         }
     }
 }
-
-
-
-
-
-

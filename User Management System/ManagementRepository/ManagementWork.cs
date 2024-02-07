@@ -1,13 +1,6 @@
-﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using User_Management_System.ManagementConfigurations;
-using User_Management_System.ManagementModels;
 using User_Management_System.ManagementRepository.IManagementRepository;
-using User_Management_System.MicrosoftSqlServerConfigurations;
-using User_Management_System.MongoDbConfigurations;
-using User_Management_System.PostgreSqlConfigurations;
-using User_Management_System.PostgreSqlRepository;
-using User_Management_System.PostgreSqlRepository.RegisterAndAuthenticate;
 using User_Management_System.SD;
 
 namespace User_Management_System.ManagementRepository

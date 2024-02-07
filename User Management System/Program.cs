@@ -15,7 +15,8 @@ using User_Management_System.MicrosoftSqlServerConfigurations;
 using User_Management_System.MongoDbConfigurations;
 using User_Management_System.PostgreSqlRepository.IPsqlRepository;
 using User_Management_System.PostgreSqlRepository;
-using User_Management_System.PostgreSqlRepository.RegisterAndAuthenticate;
+using User_Management_System.MicrosoftSqlServerRepository.IMSSqlServerRepository;
+using User_Management_System.MicrosoftSqlServerRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -43,7 +44,10 @@ builder.Services.AddScoped<IDbContextConfigurations, DbContextConfigurations>();
 builder.Services.AddScoped<IManagementWork, ManagementWork>();
 
 builder.Services.AddScoped<IPsqlUnitOfWork, PsqlUnitOfWork>();
-builder.Services.AddScoped<IRegisterAndAuthenticateRepository,RegisterAndAuthenticationRepository>();
+
+builder.Services.AddScoped<IMsSqlUnitOfWork, MsSqlUnitOfWork>();
+
+
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

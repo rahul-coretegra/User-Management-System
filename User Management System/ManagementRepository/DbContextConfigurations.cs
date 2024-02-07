@@ -1,14 +1,13 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using Microsoft.Extensions.Configuration;
 using User_Management_System.ManagementModels;
 using User_Management_System.PostgreSqlConfigurations;
-using User_Management_System.PostgreSqlRepository.RegisterAndAuthenticate;
 using User_Management_System.PostgreSqlRepository;
 using User_Management_System.ManagementConfigurations;
 using User_Management_System.MicrosoftSqlServerConfigurations;
 using User_Management_System.MongoDbConfigurations;
 using Microsoft.Extensions.Options;
 using User_Management_System.ManagementRepository.IManagementRepository;
+using User_Management_System.MicrosoftSqlServerRepository;
 
 namespace User_Management_System.ManagementRepository
 {
@@ -54,20 +53,26 @@ namespace User_Management_System.ManagementRepository
                 return true;
 
             }
-            //else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
-            //{
-            //    _configuration.GetSection("MicrosoftSqlServerConfigurations")["MicrosoftSqlServerConnection"] = Project.ConnectionString;
-            //    _mssqlcontext.Database.Migrate();
-            //    return true;
+            else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<MicrosoftSqlServerApplicationDbContext>();
 
-            //}
-            //else if (Project.TypeOfDatabase == TypeOfDatabase.MongoDb)
-            //{
-            //    _mongodbsettings.MongoDbConnection = _configuration.GetSection("MongoDbConfigurations")["MongoDbConnection"] = Project.ConnectionString;
-            //    _mongodbsettings.DatabaseName = _configuration.GetSection("MongoDbConfigurations")["DatabaseName"] = Project.DatabaseName;
+                optionsBuilder.UseSqlServer(Project.ConnectionString);
 
-            //    return true;
-            //}
+                _mssqlcontext = new MicrosoftSqlServerApplicationDbContext(optionsBuilder.Options);
+
+                _mssqlcontext.Database.Migrate();
+
+                return true;
+
+            }
+            else if (Project.TypeOfDatabase == TypeOfDatabase.MongoDb)
+            {
+                _mongodbsettings.MongoDbConnection = _configuration.GetSection("MongoDbConfigurations")["MongoDbConnection"] = Project.ConnectionString;
+                _mongodbsettings.DatabaseName = _configuration.GetSection("MongoDbConfigurations")["DatabaseName"] = Project.DatabaseName;
+
+                return true;
+            }
             else
                 return false;
         }
@@ -90,12 +95,30 @@ namespace User_Management_System.ManagementRepository
 
                 _psqlcontext = new PostgreSqlApplicationDbContext(optionsBuilder.Options);
 
-                instances.PsqlDbContext = _psqlcontext;
+                instances.psqlDbContext = _psqlcontext;
 
-                instances.PsqlUOW = new PsqlUnitOfWork(_psqlcontext);
+                instances.psqlUnitOfWork = new PsqlUnitOfWork(_psqlcontext, _appsettings);
 
-                instances.Psqlauthentication = new RegisterAndAuthenticationRepository(_psqlcontext, _appsettings);
             }
+            else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<MicrosoftSqlServerApplicationDbContext>();
+
+                var connectionString = _configuration.GetSection("MicrosoftSqlServerConfigurations")["MicrosoftSqlServerConnection"];
+
+                connectionString = Project.ConnectionString;
+
+                optionsBuilder.UseSqlServer(connectionString);
+
+                _mssqlcontext = new MicrosoftSqlServerApplicationDbContext(optionsBuilder.Options);
+
+                instances.mssqlDbContext = _mssqlcontext;
+
+                instances.mssqlUnitOfWork = new MsSqlUnitOfWork(_mssqlcontext, _appsettings);
+
+            }
+
+
 
             return instances;
         }
