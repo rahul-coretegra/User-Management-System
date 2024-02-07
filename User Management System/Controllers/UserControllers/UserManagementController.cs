@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using User_Management_System.Models.EnumModels;
-using User_Management_System.Models.SupremeModels;
-using User_Management_System.Models.UserModels.UserViewModels;
-using User_Management_System.Repositories.IRepository;
+using User_Management_System.ManagementModels;
+using User_Management_System.ManagementModels.EnumModels;
+using User_Management_System.ManagementModels.VMs;
+using User_Management_System.ManagementRepository.IManagementRepository;
+using User_Management_System.PostgreSqlModels;
 using User_Management_System.SD;
 
 namespace User_Management_System.Controllers.UserControllers
@@ -12,66 +13,62 @@ namespace User_Management_System.Controllers.UserControllers
 
     [ApiController]
     [Route(SDRoutes.UserManagement)]
-
+    [Authorize(Policy = SDPolicies.SupremeAccess)]
     public class UserManagementController : Controller
     {
-        private readonly IUnitOfWork _iunitofwork;
+        private readonly IManagementWork _management;
+        private readonly IDbContextConfigurations _dbContextConfigurations;
 
-        public UserManagementController(IUnitOfWork unitofwork)
+        public UserManagementController(IManagementWork management, IDbContextConfigurations dbContextConfigurations)
         {
-            _iunitofwork = unitofwork;
+            _dbContextConfigurations = dbContextConfigurations;
+            _management = management;
         }
 
-        [HttpGet(SDRoutes.GetUsers)]
-        [Authorize(Policy = SDPolicies.IsAccess)]
-        [Authorize(Policy = SDPolicies.SecondaryLevel)]
+        [HttpGet(SDRoutes.User)]
+        public async Task<IActionResult> GetUser(string Identity)
+        {
+            try
+            {
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+
+                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                {
+                    var indb = await context.PsqlUOW.Users.FirstOrDefaultAsync(d => d.PhoneNumber == Identity || d.Email == Identity || d.UserId == Identity, includeProperties: "UserRoles.UserRole");
+
+                    if (indb == null)
+                        return NotFound(new { message = "NotFound" });
+                    return Ok(indb);
+                }
+                else
+                    return NotFound();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Database Error" });
+            }
+        }
+
+        [HttpGet(SDRoutes.Users)]
         public async Task<IActionResult> GetUsers()
         {
             try
             {
-                var userRoleInClaim = await _iunitofwork.UserRoles.FirstOrDefaultAsync(d => d.roleUniqueCode == User.FindFirst(ClaimTypes.Role).Value);
-                var users = new List<UserAndRoleVM>();
-                var list = await _iunitofwork.UserAndRoles.GetAllAsync(x => x.userRole.roleLevel != RoleLevels.SupremeLevel, includeProperties: "user,userRole");
-                foreach (var item in list)
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+                if (projectInDb == null)
+                    return NotFound();
+                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+
+                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
-                    bool shouldAddItem = true;
-
-                    switch (userRoleInClaim.roleLevel)
-                    {
-                        case RoleLevels.SupremeLevel:
-
-                            shouldAddItem = !(item.userRole.roleLevel == RoleLevels.SupremeLevel);
-                            break;
-
-                        case RoleLevels.Authority:
-                            shouldAddItem = !(item.userRole.roleLevel >= RoleLevels.Authority);
-                            break;
-
-                        case RoleLevels.Intermediate:
-                            shouldAddItem = !(item.userRole.roleLevel >= RoleLevels.Intermediate);
-                            break;
-
-                        default:
-                            shouldAddItem = !(item.userRole.roleLevel >= RoleLevels.Secondary);
-                            break;
-                    }
-
-                    if (shouldAddItem)
-                    {
-                        UserAndRoleVM userVM = new UserAndRoleVM()
-                        {
-                            userUniqueCode = item.userUniqueCode,
-                            username = item.user.username,
-                            phoneNumber = item.user.phoneNumber,
-                            email = item.user.email,
-                            address = item.user.address,
-                            userRole = item.userRole,
-                            accessToRole = item.accessToRole
-                        };
-                        users.Add(userVM);
-                    }
+                    var list = await context.PsqlUOW.Users.GetAllAsync(includeProperties: "UserRoles.UserRole");
+                    return Ok(list);
                 }
-                return Ok(users);
+                else
+                    return BadRequest();
             }
             catch (Exception)
             {
@@ -79,129 +76,182 @@ namespace User_Management_System.Controllers.UserControllers
             }
         }
 
-        [HttpPut(SDRoutes.RemoveAccessToRole)]
-        [Authorize(Policy = SDPolicies.IsAccess)]
-        [Authorize(Policy = SDPolicies.SecondaryLevel)]
-        public async Task<IActionResult> RemoveAccessToRole(UserAndRoleVM userAndRoleVM)
+
+        [HttpPost(SDRoutes.RegisterUser)]
+        public async Task<IActionResult> RegisterUser([FromBody] UserVM User)
         {
             try
             {
-                var userRoleInClaim = await _iunitofwork.UserRoles.FirstOrDefaultAsync(d => d.roleUniqueCode == User.FindFirst(ClaimTypes.Role).Value);
-
-                var indb = await _iunitofwork.UserAndRoles.FirstOrDefaultAsync(d => d.userUniqueCode == userAndRoleVM.userUniqueCode && d.roleUniqueCode == userAndRoleVM.userRole.roleUniqueCode);
-                if (indb == null)
-                    return NotFound(new { message = "NotFound" });
-
-                if (indb.userRole.roleLevel == RoleLevels.SupremeLevel ||
-                        (userRoleInClaim.roleLevel != RoleLevels.SupremeLevel
-                        && indb.userRole.roleLevel >= userRoleInClaim.roleLevel))
-                    return BadRequest(new { message = "NoAccess" });
-
-                await _iunitofwork.UserAndRoles.UpdateAsync(indb.userAndRoleUniqueId, async entity =>
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+                if (projectInDb == null)
+                    return NotFound();
+                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
-                    if (indb.accessToRole == TrueFalse.True)
-                        entity.accessToRole = TrueFalse.False;
-                    else
-                        entity.accessToRole = TrueFalse.True;
-                    await Task.CompletedTask;
-                });
-                return Ok(new { message = "Success" });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Database Error" });
-            }
-        }
-
-        [HttpGet(SDRoutes.GetAll)]
-        [Authorize(Policy = SDPolicies.IsAccess)]
-        [Authorize(Policy = SDPolicies.SupremeLevel)]
-        public async Task<IActionResult> GetAllUsers()
-        {
-            try
-            {
-                var userList = await _iunitofwork.Users.GetAllAsync(includeProperties: "userRoles.userRole");
-                foreach (var user in userList)
-                    user.password = null;
-                return Ok(userList);
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Database Error" });
-            }
-        }
-
-        [HttpPost(SDRoutes.CreateAndUpdateUserRoles)]
-        [Authorize(Policy = SDPolicies.IsAccess)]
-        [Authorize(Policy = SDPolicies.SecondaryLevel)]
-        public async Task<IActionResult> CreateAndUpdateUserRoles([FromBody] UserAndRoles[] userRoles)
-        {
-            try
-            {
-                var userRoleInClaim = await _iunitofwork.UserRoles.FirstOrDefaultAsync(d => d.roleUniqueCode == User.FindFirst(ClaimTypes.Role).Value);
-
-                foreach (var userRole in userRoles)
-                {
-                    if (userRoleInClaim.roleLevel != RoleLevels.SupremeLevel &&
-                        userRoleInClaim.roleLevel >= userRole.userRole.roleLevel)
-                        return BadRequest(new { message = "NoAccess" });
-
-                    var userRoleInDb = await _iunitofwork.UserAndRoles.FirstOrDefaultAsync(x => x.roleUniqueCode == userRole.roleUniqueCode && x.userUniqueCode == userRole.userUniqueCode);
-
-                    if (userRoleInDb == null)
+                    if (ModelState.IsValid)
                     {
-                        var userAndRoleUniqueId = _iunitofwork.GenrateAlphaNumricUniqueCode();
-                        UserAndRoles addUserRole = new UserAndRoles()
+                        var isuniqueuser = await context.Psqlauthentication.IsUniqueUser(User.PhoneNumber, User.Email);
+                        if (!isuniqueuser)
+                            return NotFound(new { message = "Exists" });
+                        var UserId = _management.UniqueId();
+                        User registerUser = new User
                         {
-                            userAndRoleUniqueId = userAndRoleUniqueId,
-                            userUniqueCode = userRole.userUniqueCode,
-                            roleUniqueCode = userRole.roleUniqueCode,
-                            accessToRole = TrueFalse.True
-                        };
-                        await _iunitofwork.UserAndRoles.AddAsync(addUserRole);
-                    }
-                    else if (userRoleInDb.accessToRole != userRole.accessToRole)
-                    {
-                        await _iunitofwork.UserAndRoles.UpdateAsync(userRoleInDb.userAndRoleUniqueId,
-                            async entity =>
+                            UserId = UserId,
+                            UserName = User.UserName,
+                            IsVerifiedPhoneNumber = TrueFalse.True,
+                            PhoneNumber = User.PhoneNumber,
+                            IsVerifiedEmail = TrueFalse.True,
+                            Email = User.Email,
+                            IsActiveUser = TrueFalse.True,
+                            Address = User.Address,
+                            Password = User.Password,
+                            CreatedAt = DateTime.UtcNow,
+                            UserRoles = new List<UserAndRoles>
                             {
-                                entity.accessToRole = userRole.accessToRole;
+                                new UserAndRoles
+                                {
+                                    UniqueId = _management.UniqueId(),
+                                    UserId = UserId,
+                                    RoleId = SDValues.IndividualRoleCode,
+                                    AccessToRole = TrueFalse.True
+                                }
+                            }
+                        };
+                        await context.Psqlauthentication.RegisterUser(registerUser);
+                        return Ok(new { message = "Created" });
+                    }
+                    else
+                        return BadRequest(new { message = "BadRequest" });
+                }
+                else
+                {
+                    return Ok();
+                }
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Database Error" });
+            }
+        }
+
+        [HttpPut(SDRoutes.UpdateUser)]
+        public async Task<IActionResult> UpdateUser([FromBody] UserVM User)
+        {
+            try
+            {
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+
+                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+
+                if (ModelState.IsValid)
+                {
+                    if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                    {
+
+                        var indb = await context.PsqlUOW.Users.GetAsync(User.UserId);
+
+                        var inDbExists = await context.PsqlUOW.Users.FirstOrDefaultAsync(d => (d.PhoneNumber == User.PhoneNumber || d.Email == User.Email) && d.UserId != indb.UserId);
+
+                        if (indb == null)
+                            return NotFound(new { message = "NotFound" });
+
+                        if (inDbExists != null)
+                            return BadRequest(new { message = "Data Not Available" });
+
+                        await context.PsqlUOW.Users.UpdateAsync(indb.UserId, async entity =>
+                        {
+                            entity.UserName = User.UserName;
+                            entity.Email = User.Email;
+                            entity.PhoneNumber = User.PhoneNumber;
+                            entity.Address = User.Address;
+                            entity.UpdatedAt = DateTime.UtcNow;
+                            if (indb.IsActiveUser != User.IsActiveUser)
+                                entity.IsActiveUser = User.IsActiveUser;
+                            await Task.CompletedTask;
+                        });
+                        var updateduser = await context.PsqlUOW.Users.FirstOrDefaultAsync(d => d.UserId == indb.UserId, includeProperties: "UserRoles.UserRole");
+
+                        if (updateduser.IsActiveUser == TrueFalse.False)
+                        {
+                            foreach (var UserRole in updateduser.UserRoles)
+                            {
+                                await context.PsqlUOW.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
+                                {
+                                    entity.AccessToRole = TrueFalse.False;
+                                    await Task.CompletedTask;
+                                });
+                            }
+                        }
+                        else if (updateduser.IsActiveUser == TrueFalse.True)
+                        {
+                            foreach (var UserRole in updateduser.UserRoles)
+                            {
+                                if(UserRole.RoleId == SDValues.IndividualRoleCode) {
+                                    await context.PsqlUOW.UserAndRoles.UpdateAsync(UserRole.UniqueId, async entity =>
+                                    {
+                                        entity.AccessToRole = TrueFalse.True;
+                                        await Task.CompletedTask;
+                                    });
+                                }             
+                            }
+                        }
+                        return Ok(new { message = "Updated" });
+                    }
+                    else
+                        return NotFound();
+                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Database Error" });
+            }
+        }
+
+        [HttpPost(SDRoutes.UpsertUserAndRoles)]
+        public async Task<IActionResult> UpsertUserAndRoles([FromBody] UserAndRolesVM[] UserRoles)
+        {
+            try
+            {
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+                if (projectInDb == null)
+                    return NotFound();
+                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+
+                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                {
+                    foreach (var userRole in UserRoles)
+                    {
+                        var userRoleInDb = await context.PsqlUOW.UserAndRoles.FirstOrDefaultAsync(x => x.RoleId == userRole.RoleId && x.UserId == userRole.UserId);
+
+                        if (userRoleInDb == null)
+                        {
+                            var UniqueId = _management.UniqueId();
+                            UserAndRoles addUserRole = new UserAndRoles()
+                            {
+                                UniqueId = UniqueId,
+                                UserId = userRole.UserId,
+                                RoleId = userRole.RoleId,
+                                AccessToRole = TrueFalse.True
+                            };
+                            await context.PsqlUOW.UserAndRoles.AddAsync(addUserRole);
+                        }
+                        else if (userRoleInDb.AccessToRole != userRole.AccessToRole)
+                        {
+                            await context.PsqlUOW.UserAndRoles.UpdateAsync(userRoleInDb.UniqueId, async entity =>
+                            {
+                                entity.AccessToRole = userRole.AccessToRole;
                                 await Task.CompletedTask;
                             });
+                        }
                     }
+                    return Ok(new { message = "Ok" });
                 }
-                return Ok(new { message = "Ok" });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Database Error" });
-            }
-        }
-
-        [HttpPut(SDRoutes.ActivateDeactivateUser)]
-        [Authorize(Policy = SDPolicies.IsAccess)]
-        [Authorize(Policy = SDPolicies.SupremeLevel)]
-        public async Task<IActionResult> ActivateDeactivateUser(string userUniqueCode)
-        {
-            try
-            {
-                var indb = await _iunitofwork.Users.FirstOrDefaultAsync(d => d.userUniqueCode == userUniqueCode, includeProperties: "userRoles.userRole");
-                if (indb == null)
-                    return NotFound(new { message = "NotFound" });
-
-                foreach (var userRole in indb.userRoles)
-                    if (userRole.userRole.roleLevel == RoleLevels.SupremeLevel)
-                        return BadRequest(new { message = "NoAccess" });
-
-                await _iunitofwork.Users.UpdateAsync(indb.userUniqueCode, async entity =>
-                {
-                    if (indb.isActiveUser == TrueFalse.True)
-                        entity.isActiveUser = TrueFalse.False;
-                    else
-                        entity.isActiveUser = TrueFalse.True;
-                    await Task.CompletedTask;
-                });
-                return Ok(new { message = "Success" });
+                else return BadRequest();
             }
             catch (Exception)
             {

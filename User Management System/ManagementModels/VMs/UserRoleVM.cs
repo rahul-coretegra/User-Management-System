@@ -1,0 +1,19 @@
+﻿using System.ComponentModel.DataAnnotations;
+using User_Management_System.ManagementModels.EnumModels;
+
+namespace User_Management_System.ManagementModels.VMs
+{
+    public class UserRoleVM
+    {
+
+        public string RoleId { get; set; }
+
+        [Required]
+        [StringLength(50, MinimumLength = 3)]
+        [RegularExpression("^(?=.*[a-zA-Z])[a-zA-Z ]{3,50}$")]
+        public string RoleName { get; set; }
+
+        [Required]
+        public RoleLevels RoleLevel { get; set; }
+    }
+}
