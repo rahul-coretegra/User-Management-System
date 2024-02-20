@@ -35,6 +35,9 @@ namespace User_Management_System.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("IsDatabaseExists")
+                        .HasColumnType("integer");
+
                     b.Property<string>("OwnerName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -58,7 +61,7 @@ namespace User_Management_System.Migrations
 
                     b.HasKey("ProjectUniqueId");
 
-                    b.ToTable("Projects", (string)null);
+                    b.ToTable("Projects");
                 });
 
             modelBuilder.Entity("User_Management_System.ManagementModels.SupremeUser", b =>
@@ -99,7 +102,7 @@ namespace User_Management_System.Migrations
 
                     b.HasKey("UniqueId");
 
-                    b.ToTable("SupremeUsers", (string)null);
+                    b.ToTable("SupremeUsers");
                 });
 #pragma warning restore 612, 618
         }

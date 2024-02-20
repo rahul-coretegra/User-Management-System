@@ -1,12 +1,11 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 
 using Microsoft.AspNetCore.Mvc;
+using System.Data;
 using User_Management_System.ManagementModels;
 using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.ManagementModels.VMs;
 using User_Management_System.ManagementRepository.IManagementRepository;
-using User_Management_System.PostgreSqlModels;
-using User_Management_System.PostgreSqlModels.SupremeModels;
 using User_Management_System.SD;
 
 namespace User_Management_System.Controllers.ManagementControllers
@@ -34,7 +33,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                 if (projectInDb == null)
                     return NotFound();
-                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
@@ -50,7 +49,15 @@ namespace User_Management_System.Controllers.ManagementControllers
                         return NotFound(new { message = "NotFound" });
                     return Ok(role);
                 }
-                else return Ok();
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var role = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == RouteId);
+                    if (role == null)
+                        return NotFound(new { message = "NotFound" });
+                    return Ok(role);
+                }
+                else 
+                    return Ok();
             }
             catch (Exception)
             {
@@ -67,7 +74,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                 if (projectInDb == null)
                     return NotFound();
-                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
@@ -79,6 +86,11 @@ namespace User_Management_System.Controllers.ManagementControllers
                     var list = await context.mssqlUnitOfWork.Routes.GetAllAsync();
                     return Ok(list);
                 }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var list = await context.mongoUnitOfWork.Routes.GetAllAsync();
+                    return Ok(list);
+                }
                 else return Ok();
             }
             catch (Exception)
@@ -88,7 +100,7 @@ namespace User_Management_System.Controllers.ManagementControllers
         }
 
         [HttpPost(SDRoutes.CreateRoute)]
-        public async Task<IActionResult> CreateRoute([FromBody] RouteVM RouteVM)
+        public async Task<IActionResult> CreateRoute([FromBody] ManagementModels.VMs.Route RouteVM)
         {
             try
             {
@@ -98,7 +110,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                     var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                     if (projectInDb == null)
                         return NotFound();
-                    var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                    var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                     if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                     {
@@ -135,6 +147,23 @@ namespace User_Management_System.Controllers.ManagementControllers
                             return Ok(new { message = "Created" });
                         }
                     }
+                    else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                    {
+                        var indb = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RoutePath == RouteVM.RoutePath);
+                        if (indb != null)
+                            return BadRequest(new { message = "Exists" });
+                        else
+                        {
+                            MongoDbModels.Route route = new MongoDbModels.Route()
+                            {
+                                RouteId = _management.UniqueId(),
+                                RouteName = RouteVM.RouteName,
+                                RoutePath = RouteVM.RoutePath
+                            };
+                            await context.mongoUnitOfWork.Routes.AddAsync(route);
+                            return Ok(new { message = "Created" });
+                        }
+                    }
                     else
                         return Ok();
                 }
@@ -148,7 +177,7 @@ namespace User_Management_System.Controllers.ManagementControllers
         }
 
         [HttpPut(SDRoutes.UpdateRoute)]
-        public async Task<IActionResult> UpdateRoute([FromBody] RouteVM RouteVM)
+        public async Task<IActionResult> UpdateRoute([FromBody] ManagementModels.VMs.Route RouteVM)
         {
             try
             {
@@ -158,7 +187,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                     var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                     if (projectInDb == null)
                         return NotFound();
-                    var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                    var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                     if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                     {
@@ -166,15 +195,16 @@ namespace User_Management_System.Controllers.ManagementControllers
                         if (indb == null)
                             return NotFound(new { message = "Not Found" });
 
-                        var indbExists = await context.psqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != RouteVM.RouteId && d.RoutePath == RouteVM.RoutePath);
+                        var indbExists = await context.psqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != indb.RouteId && d.RoutePath == RouteVM.RoutePath);
 
                         if (indbExists != null)
                             return BadRequest(new { message = "Exists" });
 
-                        await context.psqlUnitOfWork.Routes.UpdateAsync(RouteVM.RouteId, async entity =>
+                        await context.psqlUnitOfWork.Routes.UpdateAsync(indb.RouteId, async entity =>
                         {
                             entity.RoutePath = RouteVM.RoutePath;
                             entity.RouteName = RouteVM.RouteName;
+                            
                             await Task.CompletedTask;
                         });
 
@@ -186,22 +216,39 @@ namespace User_Management_System.Controllers.ManagementControllers
                         if (indb == null)
                             return NotFound(new { message = "Not Found" });
 
-                        var indbExists = await context.mssqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != RouteVM.RouteId && d.RoutePath == RouteVM.RoutePath);
+                        var indbExists = await context.mssqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != indb.RouteId && d.RoutePath == RouteVM.RoutePath);
 
                         if (indbExists != null)
                             return BadRequest(new { message = "Exists" });
 
-                        await context.mssqlUnitOfWork.Routes.UpdateAsync(RouteVM.RouteId, async entity =>
+                        await context.mssqlUnitOfWork.Routes.UpdateAsync(indb.RouteId, async entity =>
                         {
                             entity.RoutePath = RouteVM.RoutePath;
                             entity.RouteName = RouteVM.RouteName;
                             await Task.CompletedTask;
                         });
+                        return Ok(new { message = "Updated" });
+                    }
+                    else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                    {
+                        var indb = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(x=>x.RouteId == RouteVM.RouteId);
+                        if (indb == null)
+                            return NotFound(new { message = "Not Found" });
 
+                        var indbExists = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != indb.RouteId && d.RoutePath == RouteVM.RoutePath);
+
+                        if (indbExists != null)
+                            return BadRequest(new { message = "Exists" });
+
+                        await context.mongoUnitOfWork.Routes.UpdateAsync(x=>x.RouteId == indb.RouteId, async entity =>
+                        {
+                            entity.RoutePath = RouteVM.RoutePath;
+                            entity.RouteName = RouteVM.RouteName;
+                            await Task.CompletedTask;
+                        });
                         return Ok(new { message = "Updated" });
                     }
                     else
-
                         return Ok();
                 }
                 else
@@ -213,8 +260,6 @@ namespace User_Management_System.Controllers.ManagementControllers
 
             }
         }
-
-
         
         [HttpDelete(SDRoutes.DeleteRoute)]
         public async Task<IActionResult> DeleteRoute(string RouteId)
@@ -225,7 +270,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                 if (projectInDb == null)
                     return NotFound();
-                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
@@ -253,6 +298,19 @@ namespace User_Management_System.Controllers.ManagementControllers
                     await context.mssqlUnitOfWork.Routes.RemoveAsync(RouteId);
                     return Ok(new { message = "Deleted" });
                 }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var indb = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(m=>m.RouteId ==RouteId);
+                    if (indb == null)
+                        return NotFound(new { message = "Not Found" });
+
+                    var propshave = await context.mongoUnitOfWork.RoleAndAccess.FirstOrDefaultAsync(ur => ur.RouteId == indb.RouteId && ur.IsAccess == TrueFalse.True);
+                    if (propshave != null)
+                        return BadRequest(new { message = "ObjectDepends" });
+
+                    await context.mongoUnitOfWork.Routes.RemoveAsync(m=>m.RouteId == RouteId);
+                    return Ok(new { message = "Deleted" });
+                }
                 else return Ok();
             }
             catch (Exception)
@@ -262,8 +320,8 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-        [HttpGet(SDRoutes.RoleAndAccesses)]
-        public async Task<IActionResult> GetRoleAndAccesses(string UniqueId)
+        [HttpGet(SDRoutes.RoleAndAccess)]
+        public async Task<IActionResult> GetRoleAndAccess(string UniqueId)
         {
             try
             {
@@ -271,7 +329,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                 if (projectInDb == null)
                     return NotFound();
-                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
@@ -287,6 +345,27 @@ namespace User_Management_System.Controllers.ManagementControllers
                         return NotFound(new { message = "NotFound" });
                     return Ok(role);
                 }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var role = await context.mongoUnitOfWork.RoleAndAccess.FirstOrDefaultAsync(filter: d => d.UniqueId == UniqueId);
+                   
+                    if (role == null)
+                        return NotFound(new { message = "NotFound" });
+                    var userrole = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(filter: d => d.RoleId == role.RoleId);
+                    var route = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == role.RouteId);
+
+                    MongoRoleAndAccess roleAndAccess = new MongoRoleAndAccess()
+                    {
+                        Id = role.Id,
+                        UniqueId = role.UniqueId,
+                        RoleId = role.RoleId,
+                        UserRole = userrole,
+                        RouteId = role.RouteId,
+                        Route = route,
+                        IsAccess = role.IsAccess
+                    };
+                    return Ok(roleAndAccess);
+                }
                 else return Ok();
             }
             catch (Exception)
@@ -294,7 +373,6 @@ namespace User_Management_System.Controllers.ManagementControllers
                 return StatusCode(500, new { message = "Database Error" });
             }
         }
-
 
         [HttpGet(SDRoutes.RolesAndAccesses)]
         public async Task<IActionResult> GetAllRolesAndAccesses()
@@ -305,7 +383,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                 if (projectInDb == null)
                     return NotFound();
-                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
@@ -317,6 +395,30 @@ namespace User_Management_System.Controllers.ManagementControllers
                     var list = await context.mssqlUnitOfWork.RoleAndAccess.GetAllAsync(includeProperties: "UserRole,Route");
                     return Ok(list);
                 }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var list = await context.mongoUnitOfWork.RoleAndAccess.GetAllAsync();
+                    List<MongoRoleAndAccess> items = new List<MongoRoleAndAccess>();
+                    foreach ( var item in list )
+                    {
+                        var userrole = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(filter: d => d.RoleId == item.RoleId);
+                        var route = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == item.RouteId);
+
+                        MongoRoleAndAccess roleAndAccess = new MongoRoleAndAccess()
+                        {
+                            Id = item.Id,
+                            UniqueId = item.UniqueId,
+                            RoleId = item.RoleId,
+                            UserRole = userrole,
+                            RouteId = item.RouteId,
+                            Route = route,
+                            IsAccess = item.IsAccess
+                        };
+                        items.Add(roleAndAccess);
+                    }
+
+                    return Ok(items);
+                }
                 else return BadRequest();
             }
             catch (Exception)
@@ -325,9 +427,8 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-
-        [HttpPost(SDRoutes.UpsertRolesAndAccesses)]
-        public async Task<IActionResult> UpsertRolesAndAccesses([FromBody] RoleAndAccessVM[] roleAndAccesses)
+        [HttpGet(SDRoutes.AccessByRoleId)]
+        public async Task<IActionResult> AccessByRoleId(string RoleId)
         {
             try
             {
@@ -335,7 +436,60 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
                 if (projectInDb == null)
                     return NotFound();
-                var context = _dbContextConfigurations.configureDbContext(projectInDb);
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
+
+                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                {
+                    var roleAndRoutes = (await context.psqlUnitOfWork.RoleAndAccess.GetAllAsync(r => r.RoleId == RoleId && r.IsAccess == TrueFalse.True, includeProperties: "Route,UserRole")).ToList();
+                    return Ok(roleAndRoutes);
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    var roleAndRoutes = (await context.mssqlUnitOfWork.RoleAndAccess.GetAllAsync(r => r.RoleId == RoleId && r.IsAccess == TrueFalse.True, includeProperties: "Route,UserRole")).ToList();
+                    return Ok(roleAndRoutes);
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var roleAndRoutes = (await context.mongoUnitOfWork.RoleAndAccess.GetAllAsync(r => r.RoleId == RoleId && r.IsAccess == TrueFalse.True)).ToList();
+
+                    List<MongoRoleAndAccess> items = new List<MongoRoleAndAccess>();
+                    foreach (var item in roleAndRoutes)
+                    {
+                        var route = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == item.RouteId);
+
+                        MongoRoleAndAccess roleAndRoute = new MongoRoleAndAccess()
+                        {
+                            Id = item.Id,
+                            UniqueId = item.UniqueId,
+                            RoleId = item.RoleId,
+                            RouteId = item.RouteId,
+                            Route = route,
+                            IsAccess = item.IsAccess
+                        };
+                        items.Add(roleAndRoute);
+                    }
+                    return Ok(items);
+                }
+                else return Ok();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Database Error" });
+            }
+        }
+
+
+
+        [HttpPost(SDRoutes.UpsertRolesAndAccesses)]
+        public async Task<IActionResult> UpsertRolesAndAccesses([FromBody] RoleAndAccess[] roleAndAccesses)
+        {
+            try
+            {
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+                if (projectInDb == null)
+                    return NotFound();
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
@@ -345,7 +499,7 @@ namespace User_Management_System.Controllers.ManagementControllers
 
                         if (roleAndrouteInDb == null)
                         {
-                            RoleAndAccess addRoleAndroute = new RoleAndAccess()
+                            PostgreSqlModels.RoleAndAccess addRoleAndroute = new PostgreSqlModels.RoleAndAccess()
                             {
                                 UniqueId = _management.UniqueId(),
                                 RoleId = roleAndroute.RoleId,
@@ -385,6 +539,34 @@ namespace User_Management_System.Controllers.ManagementControllers
                         else if (roleAndrouteInDb.IsAccess != roleAndroute.IsAccess)
                         {
                             await context.mssqlUnitOfWork.RoleAndAccess.UpdateAsync(roleAndrouteInDb.UniqueId, async entity =>
+                            {
+                                entity.IsAccess = roleAndroute.IsAccess;
+                                await Task.CompletedTask;
+                            });
+                        }
+                    }
+                    return Ok(new { message = "Ok" });
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    foreach (var roleAndroute in roleAndAccesses)
+                    {
+                        var roleAndrouteInDb = await context.mongoUnitOfWork.RoleAndAccess.FirstOrDefaultAsync(x => x.RoleId == roleAndroute.RoleId && x.RouteId == roleAndroute.RouteId);
+
+                        if (roleAndrouteInDb == null)
+                        {
+                            MongoDbModels.RoleAndAccess addRoleAndroute = new MongoDbModels.RoleAndAccess()
+                            {
+                                UniqueId = _management.UniqueId(),
+                                RoleId = roleAndroute.RoleId,
+                                RouteId = roleAndroute.RouteId,
+                                IsAccess = TrueFalse.True
+                            };
+                            await context.mongoUnitOfWork.RoleAndAccess.AddAsync(addRoleAndroute);
+                        }
+                        else if (roleAndrouteInDb.IsAccess != roleAndroute.IsAccess)
+                        {
+                            await context.mongoUnitOfWork.RoleAndAccess.UpdateAsync(x=>x.UniqueId == roleAndrouteInDb.UniqueId, async entity =>
                             {
                                 entity.IsAccess = roleAndroute.IsAccess;
                                 await Task.CompletedTask;

@@ -13,5 +13,9 @@ namespace User_Management_System.PostgreSqlRepository.IPsqlRepository
 
         IRoleAndAccessRepository RoleAndAccess { get; }
 
+        IMenuRepository Menus{ get; } 
+
+        IRoleAndMenusRepository RoleAndMenus { get; }
+
     }
 }

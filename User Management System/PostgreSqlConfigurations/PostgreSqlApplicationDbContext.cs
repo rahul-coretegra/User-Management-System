@@ -1,6 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using User_Management_System.PostgreSqlModels;
-using User_Management_System.PostgreSqlModels.SupremeModels;
 
 namespace User_Management_System.PostgreSqlConfigurations
 {
@@ -18,20 +17,23 @@ namespace User_Management_System.PostgreSqlConfigurations
         public DbSet<PostgreSqlModels.Route> Routes { get; set; }
 
         public DbSet<RoleAndAccess> RoleAndAccess { get; set; }
+        
+        public DbSet<Menu> Menus { get; set; }
+
+        public DbSet<RoleAndMenus> RoleAndMenus { get; set; }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
             modelBuilder.Entity<UserAndRoles>()
                 .HasOne(ura => ura.User)
-                .WithMany(u => u.UserRoles)
+                .WithMany()
                 .HasForeignKey(ura => ura.UserId);
 
             modelBuilder.Entity<UserAndRoles>()
                 .HasOne(ura => ura.UserRole)
                 .WithMany()
                 .HasForeignKey(ura => ura.RoleId);
-
 
             modelBuilder.Entity<RoleAndAccess>()
                 .HasOne(ura => ura.UserRole)
@@ -42,6 +44,16 @@ namespace User_Management_System.PostgreSqlConfigurations
                 .HasOne(ura => ura.Route)
                 .WithMany()
                 .HasForeignKey(ura => ura.RouteId);
+
+            modelBuilder.Entity<RoleAndMenus>()
+                .HasOne(ura => ura.UserRole)
+                .WithMany()
+                .HasForeignKey(ura => ura.RoleId);
+
+            modelBuilder.Entity<RoleAndMenus>()
+                .HasOne(ura => ura.Menu)
+                .WithMany()
+                .HasForeignKey(ura => ura.MenuId);
         }
     }
 }

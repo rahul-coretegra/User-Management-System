@@ -6,10 +6,28 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 {
-    public partial class Initial : Migration
+    public partial class AddInitial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "Menus",
+                columns: table => new
+                {
+                    MenuId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    MenuName = table.Column<string>(type: "text", nullable: false),
+                    MenuPath = table.Column<string>(type: "text", nullable: false),
+                    MenuIcon = table.Column<string>(type: "text", nullable: true),
+                    Status = table.Column<int>(type: "integer", nullable: false),
+                    ParentId = table.Column<string>(type: "text", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Menus", x => x.MenuId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Routes",
                 columns: table => new
@@ -93,6 +111,34 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                 });
 
             migrationBuilder.CreateTable(
+                name: "RoleAndMenus",
+                columns: table => new
+                {
+                    UniqueId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    RoleId = table.Column<string>(type: "text", nullable: false),
+                    MenuId = table.Column<string>(type: "text", nullable: false),
+                    IsAccess = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_RoleAndMenus", x => x.UniqueId);
+                    table.ForeignKey(
+                        name: "FK_RoleAndMenus_Menus_MenuId",
+                        column: x => x.MenuId,
+                        principalTable: "Menus",
+                        principalColumn: "MenuId",
+                        onDelete: ReferentialAction.Cascade);
+                    table.ForeignKey(
+                        name: "FK_RoleAndMenus_UserRoles_RoleId",
+                        column: x => x.RoleId,
+                        principalTable: "UserRoles",
+                        principalColumn: "RoleId",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "UserAndUserRoles",
                 columns: table => new
                 {
@@ -131,6 +177,16 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                 column: "RouteId");
 
             migrationBuilder.CreateIndex(
+                name: "IX_RoleAndMenus_MenuId",
+                table: "RoleAndMenus",
+                column: "MenuId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_RoleAndMenus_RoleId",
+                table: "RoleAndMenus",
+                column: "RoleId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_UserAndUserRoles_RoleId",
                 table: "UserAndUserRoles",
                 column: "RoleId");
@@ -147,10 +203,16 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                 name: "RoleAndAccess");
 
             migrationBuilder.DropTable(
+                name: "RoleAndMenus");
+
+            migrationBuilder.DropTable(
                 name: "UserAndUserRoles");
 
             migrationBuilder.DropTable(
                 name: "Routes");
+
+            migrationBuilder.DropTable(
+                name: "Menus");
 
             migrationBuilder.DropTable(
                 name: "UserRoles");

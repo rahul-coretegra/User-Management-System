@@ -1,6 +1,6 @@
 ﻿namespace User_Management_System.ManagementModels.VMs
 {
-    public class AuthenticateVM
+    public class Authenticate
     {
         public string Identity { get; set; }
 

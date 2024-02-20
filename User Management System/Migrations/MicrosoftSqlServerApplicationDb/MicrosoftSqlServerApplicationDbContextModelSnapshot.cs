@@ -22,6 +22,39 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Menu", b =>
+                {
+                    b.Property<string>("MenuId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("MenuIcon")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MenuName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("MenuPath")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ParentId")
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("MenuId");
+
+                    b.ToTable("Menus");
+                });
+
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndAccess", b =>
                 {
                     b.Property<string>("UniqueId")
@@ -51,6 +84,37 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.HasIndex("RouteId");
 
                     b.ToTable("RoleAndAccess");
+                });
+
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndMenus", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("IsAccess")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MenuId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UniqueId");
+
+                    b.HasIndex("MenuId");
+
+                    b.HasIndex("RoleId");
+
+                    b.ToTable("RoleAndMenus");
                 });
 
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Route", b =>
@@ -231,6 +295,25 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.Navigation("UserRole");
                 });
 
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndMenus", b =>
+                {
+                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.Menu", "Menu")
+                        .WithMany()
+                        .HasForeignKey("MenuId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.UserRole", "UserRole")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Menu");
+
+                    b.Navigation("UserRole");
+                });
+
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.UserAndRoles", b =>
                 {
                     b.HasOne("User_Management_System.MicrosoftSqlServerModels.UserRole", "UserRole")
@@ -240,7 +323,7 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                         .IsRequired();
 
                     b.HasOne("User_Management_System.MicrosoftSqlServerModels.User", "User")
-                        .WithMany("UserRoles")
+                        .WithMany()
                         .HasForeignKey("UserId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
@@ -248,11 +331,6 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.Navigation("User");
 
                     b.Navigation("UserRole");
-                });
-
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.User", b =>
-                {
-                    b.Navigation("UserRoles");
                 });
 #pragma warning restore 612, 618
         }

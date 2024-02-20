@@ -59,23 +59,17 @@ namespace User_Management_System.Controllers.ManagementControllers
             {
                 try
                 {
-                    var indb = await _management.Projects.FirstOrDefaultAsync(d => d.ProjectName == Project.ProjectName || d.ConnectionString == Project.ConnectionString);
-                    if (indb != null)
-                        return BadRequest(new { message = "Exists" });
+                    Project.ProjectUniqueId = _management.UniqueId();
+                    var result = _dbContextConfigurations.establishDbConnection(Project);
+
+                    if (result == true)
+                    {
+                        await _management.Projects.AddAsync(Project);
+                        return Ok(new { message = "Created" });
+                    }
                     else
                     {
-                        Project.ProjectUniqueId = _management.UniqueId();
-                        var result = _dbContextConfigurations.establishDbConnection(Project);
-
-                        if (result == true)
-                        {
-                            await _management.Projects.AddAsync(Project);
-                            return Ok(new { message = "Created" });
-                        }
-                        else
-                        {
-                            return BadRequest(new { message = "sorry" });
-                        }
+                        return BadRequest(new { message = "sorry" });
                     }
                 }
                 catch (Exception)
@@ -98,12 +92,12 @@ namespace User_Management_System.Controllers.ManagementControllers
                     if (indb == null)
                         return NotFound(new { message = "Not Found" });
 
-                    var indbExists = await _management.Projects.FirstOrDefaultAsync(d => d.ProjectUniqueId != Project.ProjectUniqueId && (d.ProjectName == Project.ProjectName || d.ConnectionString == Project.ConnectionString));
+                    var indbExists = await _management.Projects.FirstOrDefaultAsync(d => d.ProjectUniqueId != indb.ProjectUniqueId && d.ConnectionString == Project.ConnectionString);
 
                     if (indbExists != null)
                         return BadRequest(new { message = "Exists" });
 
-                    await _management.Projects.UpdateAsync(Project.ProjectUniqueId, async entity =>
+                    await _management.Projects.UpdateAsync(indb.ProjectUniqueId, async entity =>
                     {
                         entity.ProjectName = Project.ProjectName;
                         entity.ProjectDescription = Project.ProjectDescription;

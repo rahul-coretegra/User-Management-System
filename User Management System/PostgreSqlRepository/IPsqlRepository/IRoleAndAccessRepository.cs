@@ -1,5 +1,5 @@
 ﻿
-using User_Management_System.PostgreSqlModels.SupremeModels;
+using User_Management_System.PostgreSqlModels;
 
 namespace User_Management_System.PostgreSqlRepository.IPsqlRepository
 {

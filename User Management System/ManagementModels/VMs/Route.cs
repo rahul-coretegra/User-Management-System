@@ -2,7 +2,7 @@
 
 namespace User_Management_System.ManagementModels.VMs
 {
-    public class RouteVM
+    public class Route
     {
         public string RouteId { get; set; }
 

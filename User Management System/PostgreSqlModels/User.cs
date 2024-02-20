@@ -22,8 +22,6 @@ namespace User_Management_System.PostgreSqlModels
         [RegularExpression("^[789]\\d{9}$")]
         public string PhoneNumber { get; set; }
 
-        public List<UserAndRoles> UserRoles { get; set; }
-
         [Required]
         [RegularExpression("^[a-z0-9+_.-]+@[a-z0-9.-]+$")]
         public string Email { get; set; }
@@ -45,7 +43,6 @@ namespace User_Management_System.PostgreSqlModels
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
-
 
     }
 }

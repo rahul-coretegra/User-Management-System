@@ -11,5 +11,10 @@
         IUserAndRolesRepository UserAndRoles { get; }
 
         IRoleAndAccessRepository RoleAndAccess { get; }
+
+        IMenuRepository Menus { get; }
+
+        IRoleAndMenusRepository RoleAndMenus { get; }
+
     }
 }

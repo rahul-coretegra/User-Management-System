@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations;
 using User_Management_System.ManagementModels.EnumModels;
 
-namespace User_Management_System.PostgreSqlModels.SupremeModels
+namespace User_Management_System.PostgreSqlModels
 {
     public class RoleAndAccess
     {

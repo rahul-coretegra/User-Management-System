@@ -19,6 +19,8 @@ namespace User_Management_System.PostgreSqlRepository
             Routes = new RouteRepository(_context);
             UserAndRoles = new UserAndRolesRepository(_context);
             RoleAndAccess = new RoleAndAccessRepository(_context);
+            Menus = new MenuRepository(_context);
+            RoleAndMenus = new RoleAndMenusRepository(_context);
 
         }
         public IUserRoleRepository UserRoles { private set; get; }
@@ -30,6 +32,10 @@ namespace User_Management_System.PostgreSqlRepository
         public IUserAndRolesRepository UserAndRoles { private set; get; }
 
         public IRoleAndAccessRepository RoleAndAccess { private set; get; }
-            
+
+        public IMenuRepository Menus { private set; get; }
+
+        public IRoleAndMenusRepository RoleAndMenus { private set; get; }
+
     }
 }

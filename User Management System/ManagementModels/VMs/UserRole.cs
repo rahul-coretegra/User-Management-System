@@ -3,9 +3,8 @@ using User_Management_System.ManagementModels.EnumModels;
 
 namespace User_Management_System.ManagementModels.VMs
 {
-    public class UserRoleVM
+    public class UserRole
     {
-
         public string RoleId { get; set; }
 
         [Required]

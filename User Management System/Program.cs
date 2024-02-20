@@ -17,6 +17,8 @@ using User_Management_System.PostgreSqlRepository.IPsqlRepository;
 using User_Management_System.PostgreSqlRepository;
 using User_Management_System.MicrosoftSqlServerRepository.IMSSqlServerRepository;
 using User_Management_System.MicrosoftSqlServerRepository;
+using User_Management_System.MongoDbRepository.IMongoRepository;
+using User_Management_System.MongoDbRepository;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -34,18 +36,19 @@ builder.Services.AddDbContext<MicrosoftSqlServerApplicationDbContext>(options =>
 
 builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("MongoDbConfigurations"));
 
-
-
 // Register MongoDBContext as a singleton
 builder.Services.AddSingleton<MongoDbApplicationDbContext>();
 
 
 builder.Services.AddScoped<IDbContextConfigurations, DbContextConfigurations>();
+
 builder.Services.AddScoped<IManagementWork, ManagementWork>();
 
 builder.Services.AddScoped<IPsqlUnitOfWork, PsqlUnitOfWork>();
 
 builder.Services.AddScoped<IMsSqlUnitOfWork, MsSqlUnitOfWork>();
+
+builder.Services.AddScoped<IMongoUnitOfWork, MongoUnitOfWork>();
 
 
 builder.Services.AddTransient<IConfigureOptions<SwaggerGenOptions>, ConfigureSwaggerOptions>();

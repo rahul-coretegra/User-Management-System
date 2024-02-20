@@ -126,7 +126,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                     if (indb == null)
                         return NotFound(new { message = "Not found" });
 
-                    var indbExists = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UniqueId != supremeUser.UniqueId && (d.UserName == supremeUser.UserName || d.Email == supremeUser.Email));
+                    var indbExists = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UniqueId != indb.UniqueId && (d.UserName == supremeUser.UserName || d.Email == supremeUser.Email));
 
                     if (indbExists != null)
                         return BadRequest(new { message = "Exists" });

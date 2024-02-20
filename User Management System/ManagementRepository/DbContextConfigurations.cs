@@ -1,124 +1,174 @@
 ﻿using Microsoft.EntityFrameworkCore;
-using User_Management_System.ManagementModels;
 using User_Management_System.PostgreSqlConfigurations;
-using User_Management_System.PostgreSqlRepository;
+
 using User_Management_System.ManagementConfigurations;
 using User_Management_System.MicrosoftSqlServerConfigurations;
 using User_Management_System.MongoDbConfigurations;
 using Microsoft.Extensions.Options;
 using User_Management_System.ManagementRepository.IManagementRepository;
+using User_Management_System.ManagementModels;
+using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.MicrosoftSqlServerRepository;
+using User_Management_System.MongoDbRepository;
+using User_Management_System.PostgreSqlRepository;
+using MongoDB.Driver;
+using Microsoft.Extensions.Configuration;
 
 namespace User_Management_System.ManagementRepository
 {
-    public class DbContextConfigurations:IDbContextConfigurations
+    public class DbContextConfigurations : IDbContextConfigurations
     {
         private readonly ApplicationDbContext _context;
         private PostgreSqlApplicationDbContext _psqlcontext;
         private MicrosoftSqlServerApplicationDbContext _mssqlcontext;
-        private readonly MongoDbApplicationDbContext _mongodbcontext;
-        private readonly MongoDbSettings _mongodbsettings;
-        private readonly IConfiguration _configuration;
+
+        private readonly IOptions<MongoDbSettings> _mongodbsettings;
+        private MongoDbApplicationDbContext _mongodbcontext;
         private readonly IOptions<AppSettings> _appsettings;
 
-        public DbContextConfigurations(ApplicationDbContext context, IConfiguration configuration,
+        public DbContextConfigurations(ApplicationDbContext context,
             PostgreSqlApplicationDbContext postgreSql, MicrosoftSqlServerApplicationDbContext microsoftSql,
             MongoDbApplicationDbContext mongoDb, IOptions<MongoDbSettings> mongodbsettings,
             IOptions<AppSettings> settings)
         {
             _context = context;
-            _configuration = configuration;
             _psqlcontext = postgreSql;
             _mssqlcontext = microsoftSql;
             _mongodbcontext = mongoDb;
-            _mongodbsettings = mongodbsettings.Value;
+            _mongodbsettings = mongodbsettings;
             _appsettings = settings;
         }
 
         public bool establishDbConnection(Project Project)
         {
-            if (Project == null)
-                return false;
+            try
+            {
+                if (Project.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                {
+                    _psqlcontext = configurePostgreSqlDbContext(Project.ConnectionString);
 
-            else if (Project.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                    if (Project.IsDatabaseExists == TrueFalse.False)
+                        return MigratePostgreSqlDataBase(_psqlcontext);
+
+                    return true;
+
+                }
+                else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    _mssqlcontext = configureMicrosoftSqlServerDbContext(Project.ConnectionString);
+
+                    if (Project.IsDatabaseExists == TrueFalse.False)
+                        return MigrateMicrosoftSqlServerDataBase(_mssqlcontext);
+
+                    return true;
+                }
+                if (Project.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    _mongodbcontext = configureMongoDbDbContext(Project.ConnectionString, Project.DatabaseName);
+                    return true;
+                }
+                else
+                    return false;
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+        }
+
+        public PostgreSqlApplicationDbContext configurePostgreSqlDbContext(string ConnectionString)
+        {
+            try
             {
                 var optionsBuilder = new DbContextOptionsBuilder<PostgreSqlApplicationDbContext>();
 
-                optionsBuilder.UseNpgsql(Project.ConnectionString);
+                optionsBuilder.UseNpgsql(ConnectionString);
 
-                _psqlcontext = new PostgreSqlApplicationDbContext(optionsBuilder.Options);
-
-                _psqlcontext.Database.Migrate();
-
-                return true;
-
+                return new PostgreSqlApplicationDbContext(optionsBuilder.Options);
             }
-            else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+            catch (Exception ex)
             {
-                var optionsBuilder = new DbContextOptionsBuilder<MicrosoftSqlServerApplicationDbContext>();
-
-                optionsBuilder.UseSqlServer(Project.ConnectionString);
-
-                _mssqlcontext = new MicrosoftSqlServerApplicationDbContext(optionsBuilder.Options);
-
-                _mssqlcontext.Database.Migrate();
-
-                return true;
-
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return null;
             }
-            else if (Project.TypeOfDatabase == TypeOfDatabase.MongoDb)
-            {
-                _mongodbsettings.MongoDbConnection = _configuration.GetSection("MongoDbConfigurations")["MongoDbConnection"] = Project.ConnectionString;
-                _mongodbsettings.DatabaseName = _configuration.GetSection("MongoDbConfigurations")["DatabaseName"] = Project.DatabaseName;
-
-                return true;
-            }
-            else
-                return false;
         }
 
-
-
-        public Instance configureDbContext(Project Project)
+        public bool MigratePostgreSqlDataBase(PostgreSqlApplicationDbContext applicationDbContext)
         {
+            applicationDbContext.Database.Migrate();
+            if (applicationDbContext.Database.CanConnect())
+                return true;
+            return false;
+        }
 
+        public MicrosoftSqlServerApplicationDbContext configureMicrosoftSqlServerDbContext(string ConnectionString)
+        {
+            try
+            {
+                var optionsBuilder = new DbContextOptionsBuilder<MicrosoftSqlServerApplicationDbContext>();
+                optionsBuilder.UseSqlServer(ConnectionString);
+                return new MicrosoftSqlServerApplicationDbContext(optionsBuilder.Options);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return null;
+            }
+        }
+
+        public bool MigrateMicrosoftSqlServerDataBase(MicrosoftSqlServerApplicationDbContext applicationDbContext)
+        {
+            applicationDbContext.Database.Migrate();
+            if (applicationDbContext.Database.CanConnect())
+                return true;
+            return false;
+        }
+
+        public MongoDbApplicationDbContext configureMongoDbDbContext(string ConnectionString, string DatabaseName)
+        {
+            try
+            {
+                _mongodbsettings.Value.Client = ConnectionString;
+
+                _mongodbsettings.Value.DatabaseName = DatabaseName;
+
+                return new MongoDbApplicationDbContext(_mongodbsettings);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An error occurred: {ex.Message}");
+                return null;
+            }
+        }
+
+        public Instance configureDbContexts(Project Project)
+        {
             Instance instances = new Instance();
             if (Project.TypeOfDatabase == TypeOfDatabase.PostgreSql)
             {
-                var optionsBuilder = new DbContextOptionsBuilder<PostgreSqlApplicationDbContext>();
 
-                var connectionString = _configuration.GetSection("PostgreSqlConfigurations")["PostgreSqlConnectionString"];
+                instances.psqlDbContext = configurePostgreSqlDbContext(Project.ConnectionString);
 
-                connectionString = Project.ConnectionString;
-
-                optionsBuilder.UseNpgsql(connectionString);
-
-                _psqlcontext = new PostgreSqlApplicationDbContext(optionsBuilder.Options);
-
-                instances.psqlDbContext = _psqlcontext;
-
-                instances.psqlUnitOfWork = new PsqlUnitOfWork(_psqlcontext, _appsettings);
+                instances.psqlUnitOfWork = new PsqlUnitOfWork(instances.psqlDbContext, _appsettings);
 
             }
             else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
             {
-                var optionsBuilder = new DbContextOptionsBuilder<MicrosoftSqlServerApplicationDbContext>();
 
-                var connectionString = _configuration.GetSection("MicrosoftSqlServerConfigurations")["MicrosoftSqlServerConnection"];
+                instances.mssqlDbContext = configureMicrosoftSqlServerDbContext(Project.ConnectionString);
 
-                connectionString = Project.ConnectionString;
-
-                optionsBuilder.UseSqlServer(connectionString);
-
-                _mssqlcontext = new MicrosoftSqlServerApplicationDbContext(optionsBuilder.Options);
-
-                instances.mssqlDbContext = _mssqlcontext;
-
-                instances.mssqlUnitOfWork = new MsSqlUnitOfWork(_mssqlcontext, _appsettings);
+                instances.mssqlUnitOfWork = new MsSqlUnitOfWork(instances.mssqlDbContext, _appsettings);
 
             }
 
+            else if (Project.TypeOfDatabase == TypeOfDatabase.MongoDb)
+            {
 
+                instances.mongoDbContext = configureMongoDbDbContext(Project.ConnectionString, Project.DatabaseName);
+
+                instances.mongoUnitOfWork = new MongoUnitOfWork(instances.mongoDbContext, _appsettings);
+
+            }
 
             return instances;
         }

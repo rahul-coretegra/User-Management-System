@@ -43,20 +43,34 @@
 
 
         public const string RoleAndAccessManagement = baseUrl + "/roleandaccess";
-
         public const string Routes = "routes";
-
         public const string Route = "route";
-
         public const string CreateRoute = "create";
         public const string UpdateRoute = "update";
         public const string DeleteRoute = "delete";
 
+        public const string AccessByRoleId = "accessbyroleid";
         public const string RolesAndAccesses =  "rolesandaccesses";
-
-        public const string RoleAndAccesses =  "roleandaccesses";
-
+        public const string RoleAndAccess =  "roleandaccess";
         public const string UpsertRolesAndAccesses = "upsertrolesandaccesses";
+
+
+        public const string RoleAndMenusManagement = baseUrl + "/roleandmenus";
+
+        public const string Menus = "menus";
+        public const string Menu = "menu";
+        public const string MenusByParentId = "menusbyparentid";
+        public const string CreateMenu = "create";
+        public const string UpdateMenu = "update";
+        public const string DeleteMenu = "delete";
+
+        public const string MenusWithSubMenus = "menuswithsubmenus";
+
+        public const string MenusByRoleId = "menusbyroleid";
+        public const string RolesAndMenus = "rolesandmenus";
+        public const string RoleAndMenu = "roleandmenu";
+        public const string UpsertRolesAndMenus = "upsertrolesandmenus";
+
 
 
         public const string UserManagement = baseUrl + "/user";

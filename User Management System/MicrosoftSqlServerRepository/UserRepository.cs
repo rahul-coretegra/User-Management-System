@@ -23,7 +23,7 @@ namespace User_Management_System.MicrosoftSqlServerRepository
         }
         public async Task<bool> IsUniqueUser(string Phonenumber, string Email)
         {
-            var userindb = await _context.Users.FirstOrDefaultAsync(x => x.PhoneNumber == Phonenumber || x.Email == Email);
+            var userindb = await dbSet.FirstOrDefaultAsync(x => x.PhoneNumber == Phonenumber || x.Email == Email);
             if (userindb == null)
                 return true;
             return false;
@@ -32,7 +32,7 @@ namespace User_Management_System.MicrosoftSqlServerRepository
         public async Task<string> Authenticate(string Identity, string RoleId)
         {
 
-            var userindb = await _context.Users.FirstOrDefaultAsync(x => x.PhoneNumber == Identity || x.UserId == Identity || x.Email == Identity);
+            var userindb = await dbSet.FirstOrDefaultAsync(x => x.PhoneNumber == Identity || x.UserId == Identity || x.Email == Identity);
             if (userindb == null)
                 return null;
             //jwt
@@ -59,7 +59,7 @@ namespace User_Management_System.MicrosoftSqlServerRepository
 
         public async Task<bool> RegisterUser(User user)
         {
-            await _context.Users.AddAsync(user);
+            await dbSet.AddAsync(user);
             await _context.SaveChangesAsync();
             return true;
         }
