@@ -31,30 +31,10 @@ namespace User_Management_System.AuthorizationResources
         {
             services.AddAuthorization(options =>
             {
-                options.AddPolicy(SDPolicies.SupremeLevel, x =>
+                options.AddPolicy(SDPolicies.SupremeAccess, x =>
                 {
                     x.RequireAuthenticatedUser();
-                    x.AddRequirements(new SupremeLevelRequirement());
-                });
-                options.AddPolicy(SDPolicies.AuthorityLevel, x =>
-                {
-                    x.RequireAuthenticatedUser();
-                    x.AddRequirements(new AuthorityLevelRequirement());
-                });
-                options.AddPolicy(SDPolicies.IntermediateLevel, x =>
-                {
-                    x.RequireAuthenticatedUser();
-                    x.AddRequirements(new IntermediateLevelRequirement());
-                });
-                options.AddPolicy(SDPolicies.SecondaryLevel, x =>
-                {
-                    x.RequireAuthenticatedUser();
-                    x.AddRequirements(new SecondaryLevelRequirement());
-                });
-                options.AddPolicy(SDPolicies.IsAccess, x =>
-                {
-                    x.RequireAuthenticatedUser();
-                    x.AddRequirements(new IsAccssRequirement());
+                    x.AddRequirements(new SupremeAccessRequirement());
                 });
             });
         }

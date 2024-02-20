@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
-using User_Management_System.DbModule;
+using User_Management_System.ManagementConfigurations;
 
 #nullable disable
 
@@ -22,205 +22,87 @@ namespace User_Management_System.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.RoleAndAccess", b =>
+            modelBuilder.Entity("User_Management_System.ManagementModels.Project", b =>
                 {
-                    b.Property<string>("roleAndAccessId")
+                    b.Property<string>("ProjectUniqueId")
                         .HasColumnType("text");
 
-                    b.Property<int>("id")
+                    b.Property<string>("ConnectionString")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("DatabaseName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("IsDatabaseExists")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("OwnerName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ProjectDescription")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ProjectId")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ProjectId"));
 
-                    b.Property<int>("isAccess")
+                    b.Property<string>("ProjectName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("TypeOfDatabase")
                         .HasColumnType("integer");
 
-                    b.Property<string>("roleUniqueCode")
-                        .IsRequired()
-                        .HasColumnType("text");
+                    b.HasKey("ProjectUniqueId");
 
-                    b.Property<string>("routeName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("routePath")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("roleAndAccessId");
-
-                    b.HasIndex("roleUniqueCode");
-
-                    b.ToTable("RoleAndAccess");
+                    b.ToTable("Projects");
                 });
 
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserAndRoles", b =>
+            modelBuilder.Entity("User_Management_System.ManagementModels.SupremeUser", b =>
                 {
-                    b.Property<string>("userAndRoleUniqueId")
+                    b.Property<string>("UniqueId")
                         .HasColumnType("text");
 
-                    b.Property<int>("accessToRole")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
-
-                    b.Property<string>("roleUniqueCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("userUniqueCode")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("userAndRoleUniqueId");
-
-                    b.HasIndex("roleUniqueCode");
-
-                    b.HasIndex("userUniqueCode");
-
-                    b.ToTable("UserAndUserRoles");
-                });
-
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserRole", b =>
-                {
-                    b.Property<string>("roleUniqueCode")
-                        .HasColumnType("text");
-
-                    b.Property<int>("roleId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("roleId"));
-
-                    b.Property<int>("roleLevel")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("roleName")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("roleUniqueCode");
-
-                    b.ToTable("UserRoles");
-                });
-
-            modelBuilder.Entity("User_Management_System.Models.UserModels.User", b =>
-                {
-                    b.Property<string>("userUniqueCode")
-                        .HasColumnType("text");
-
-                    b.Property<string>("address")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("createdAt")
+                    b.Property<DateTime?>("CreatedAt")
                         .HasColumnType("timestamp with time zone");
 
-                    b.Property<string>("email")
+                    b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("id")
+                    b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
                         .HasColumnType("integer");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<int>("isActiveUser")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("isVerifiedEmail")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("isVerifiedPhoneNumber")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("password")
+                    b.Property<string>("Password")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("phoneNumber")
+                    b.Property<string>("PhoneNumber")
                         .IsRequired()
-                        .HasMaxLength(10)
-                        .HasColumnType("character varying(10)");
-
-                    b.Property<string>("token")
                         .HasColumnType("text");
 
-                    b.Property<DateTime?>("updatedAt")
-                        .HasColumnType("timestamp with time zone");
+                    b.Property<bool>("SupremeAccess")
+                        .HasColumnType("boolean");
 
-                    b.Property<string>("username")
+                    b.Property<string>("Token")
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserName")
                         .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("character varying(50)");
-
-                    b.HasKey("userUniqueCode");
-
-                    b.ToTable("Users");
-                });
-
-            modelBuilder.Entity("User_Management_System.Models.UserModels.UserVerification", b =>
-                {
-                    b.Property<string>("identity")
                         .HasColumnType("text");
 
-                    b.Property<int>("id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
+                    b.HasKey("UniqueId");
 
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("id"));
-
-                    b.Property<string>("otp")
-                        .HasColumnType("text");
-
-                    b.Property<DateTime?>("otpTimeStamp")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.HasKey("identity");
-
-                    b.ToTable("UserVerifications");
-                });
-
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.RoleAndAccess", b =>
-                {
-                    b.HasOne("User_Management_System.Models.SupremeModels.UserRole", "userRole")
-                        .WithMany()
-                        .HasForeignKey("roleUniqueCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("userRole");
-                });
-
-            modelBuilder.Entity("User_Management_System.Models.SupremeModels.UserAndRoles", b =>
-                {
-                    b.HasOne("User_Management_System.Models.SupremeModels.UserRole", "userRole")
-                        .WithMany()
-                        .HasForeignKey("roleUniqueCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("User_Management_System.Models.UserModels.User", "user")
-                        .WithMany("userRoles")
-                        .HasForeignKey("userUniqueCode")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("user");
-
-                    b.Navigation("userRole");
-                });
-
-            modelBuilder.Entity("User_Management_System.Models.UserModels.User", b =>
-                {
-                    b.Navigation("userRoles");
+                    b.ToTable("SupremeUsers");
                 });
 #pragma warning restore 612, 618
         }

@@ -4,53 +4,88 @@
     {
         public const string baseUrl = "api";
 
-        public const string UserRoles = baseUrl + "/userrole";
-        public const string RoleAndAccess = baseUrl + "/roleandaccess";
 
-        public const string UserManagement = baseUrl + "/usermanagement";
+        public const string ProjectManagement = baseUrl + "/project";
 
-        public const string RegisterAndAuthenticate = baseUrl + "/registerandauthenticate";
+        public const string Projects = "projects";
 
-        public const string Verification = baseUrl + "/verification";
+        public const string Project =  "project";
 
-        public const string Individuals = baseUrl + "/individual";
+        public const string CreateProject =  "create";
 
-
+        public const string UpadateProject =  "update";
 
 
-        public const string Get = "get";
+        public const string SupremeUserManagement = baseUrl + "/supremeuser";
 
-        public const string GetUserByPhoneNumber = "getuserbyphonenumber";
-        public const string GetAll = "getall";
-        public const string GetUsers= "getusers";
+        public const string SupremeUsers = "supremeusers";
+
+        public const string SupremeUser =  "supremeuser";
+
+        public const string RegisterSupremeUser =  "create";
+
+        public const string Authenticate =  "authenticate";
+
+        public const string UpdateSupremeUser =  "update";
+
+
+        public const string UserRoleManagement = baseUrl + "/userrole";
+
+        public const string UserRoles = "userroles";
+
+        public const string UserRole =  "userrole";
+
+        public const string CreateUserRole =  "create";
+
+        public const string UpadateUserRole =  "update";
+
+        public const string DeleteUserRole = "delete";
+
+
+        public const string RoleAndAccessManagement = baseUrl + "/roleandaccess";
+        public const string Routes = "routes";
+        public const string Route = "route";
+        public const string CreateRoute = "create";
+        public const string UpdateRoute = "update";
+        public const string DeleteRoute = "delete";
+
+        public const string AccessByRoleId = "accessbyroleid";
+        public const string RolesAndAccesses =  "rolesandaccesses";
+        public const string RoleAndAccess =  "roleandaccess";
+        public const string UpsertRolesAndAccesses = "upsertrolesandaccesses";
+
+
+        public const string RoleAndMenusManagement = baseUrl + "/roleandmenus";
+
+        public const string Menus = "menus";
+        public const string Menu = "menu";
+        public const string MenusByParentId = "menusbyparentid";
+        public const string CreateMenu = "create";
+        public const string UpdateMenu = "update";
+        public const string DeleteMenu = "delete";
+
+        public const string MenusWithSubMenus = "menuswithsubmenus";
+
+        public const string MenusByRoleId = "menusbyroleid";
+        public const string RolesAndMenus = "rolesandmenus";
+        public const string RoleAndMenu = "roleandmenu";
+        public const string UpsertRolesAndMenus = "upsertrolesandmenus";
 
 
 
-        public const string Create = "create";
+        public const string UserManagement = baseUrl + "/user";
+
+        public const string Users ="users";
+
+        public const string User = "user";
 
         public const string RegisterUser = "registeruser";
-        public const string Authenticate = "authenticate";
 
-        public const string CreateAndUpdateRoleAndAccess = "createandupdateroleandaccess";
-        public const string CreateAndUpdateUserRoles = "createandupdateuserroles";
+        public const string UpdateUser ="updateuser";
 
+        public const string UpsertUserAndRoles =  "upsertuserandroles";
 
-        public const string Update = "update";
-        public const string UpdateUser = "updateuser";
-
-        public const string ActivateDeactivateUser = "activatedeactivateuser";
-        public const string RemoveAccessToRole = "removeaccesstorole";
-
-
-        public const string UpdatePassword = "updatepassword";
-        public const string ResetPassword = "resetpassword";
-
-        public const string SendOtpUsingOutlookSmtp = "sendotpusingoutlooksmtp";
-        public const string SendOtpUsingTwilio = "sendotpusingtwilio";
-
-        public const string VerifyEmailsAndMessages = "verifyemailsandmessages";
-
-        public const string Delete = "delete";
+        public const string ActivateDeactivateUser =  "activatedeactivateuser";
 
     }
 }
