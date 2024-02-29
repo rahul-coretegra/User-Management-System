@@ -17,13 +17,13 @@ namespace User_Management_System.Controllers.ManagementControllers
             _management = management;
         }
 
-        [HttpGet(SDRoutes.SupremeUser)]
+        [HttpGet(SDRoutes.Get)]
         [Authorize(Policy = SDPolicies.SupremeAccess)]
-        public async Task<IActionResult> GetSupremeUser(string UniqueId)
+        public async Task<IActionResult> GetSupremeUser(string UserUniqueId)
         {
             try
             {
-                var user = await _management.SupremeUsers.FirstOrDefaultAsync(x => x.UniqueId == UniqueId);
+                var user = await _management.SupremeUsers.FirstOrDefaultAsync(x => x.UserUniqueId == UserUniqueId);
                 return Ok(user);
             }
             catch (Exception)
@@ -32,9 +32,9 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-        [HttpGet(SDRoutes.SupremeUsers)]
+        [HttpGet(SDRoutes.GetAll)]
         [Authorize(Policy = SDPolicies.SupremeAccess)]
-        public async Task<IActionResult> GetSupremeUsers()
+        public async Task<IActionResult> GetAllSupremeUsers()
         {
             try
             {
@@ -47,7 +47,7 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-        [HttpPost(SDRoutes.RegisterSupremeUser)]
+        [HttpPost(SDRoutes.Register)]
         [Authorize(Policy = SDPolicies.SupremeAccess)]
         public async Task<IActionResult> RegisterSupremeUser([FromBody] SupremeUser SupremeUser)
         {
@@ -62,7 +62,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                     {
                         SupremeUser user = new SupremeUser()
                         {
-                            UniqueId = _management.UniqueId(),
+                            UserUniqueId = _management.UniqueId(),
                             UserName = SupremeUser.UserName,
                             Email = SupremeUser.Email,
                             PhoneNumber = SupremeUser.PhoneNumber,
@@ -83,7 +83,6 @@ namespace User_Management_System.Controllers.ManagementControllers
                 return BadRequest(new { message = "BadRequest" });
         }
 
-
         [HttpPost(SDRoutes.Authenticate)]
         public async Task<IActionResult> Authenticate([FromBody] AuthenticateSupremeUser SupremeUser)
         {
@@ -91,12 +90,12 @@ namespace User_Management_System.Controllers.ManagementControllers
             {
                 var userindb = await _management.SupremeUsers.FirstOrDefaultAsync(u => u.PhoneNumber == SupremeUser.Identity
 
-                            || u.UniqueId == SupremeUser.Identity || u.Email == SupremeUser.Identity);
+                            || u.UserUniqueId == SupremeUser.Identity || u.Email == SupremeUser.Identity);
 
                 if (userindb == null)
                     return NotFound(new { message = "Not Found" });
 
-                else if (userindb.Password !=   SupremeUser.Password)
+                else if (userindb.Password != SupremeUser.Password)
                     return BadRequest(new { message = "Wrong Password" });
 
                 else if (userindb.SupremeAccess != true)
@@ -113,32 +112,32 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
+        [HttpPut(SDRoutes.Update)]
 
-        [HttpPut(SDRoutes.UpdateSupremeUser)]
         [Authorize(Policy = SDPolicies.SupremeAccess)]
-        public async Task<IActionResult> UpdateSupremeUser([FromBody] SupremeUser supremeUser)
+        public async Task<IActionResult> UpdateSupremeUser([FromBody] SupremeUser SupremeUser)
         {
             if (ModelState.IsValid)
             {
                 try
                 {
-                    var indb = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UniqueId == supremeUser.UniqueId);
+                    var indb = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UserUniqueId == SupremeUser.UserUniqueId);
                     if (indb == null)
                         return NotFound(new { message = "Not found" });
 
-                    var indbExists = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UniqueId != indb.UniqueId && (d.UserName == supremeUser.UserName || d.Email == supremeUser.Email));
+                    var indbExists = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UserUniqueId != indb.UserUniqueId && (d.UserName == SupremeUser.UserName || d.Email == SupremeUser.Email));
 
                     if (indbExists != null)
                         return BadRequest(new { message = "Exists" });
 
-                    await _management.SupremeUsers.UpdateAsync(indb.UniqueId, async entity =>
+                    await _management.SupremeUsers.UpdateAsync(indb.UserUniqueId, async entity =>
                     {
 
-                        entity.UserName = supremeUser.UserName;
-                        entity.Email = supremeUser.Email;
-                        entity.PhoneNumber = supremeUser.PhoneNumber;
-                        entity.Password = supremeUser.Password;
-                        entity.SupremeAccess = supremeUser.SupremeAccess;
+                        entity.UserName = SupremeUser.UserName;
+                        entity.Email = SupremeUser.Email;
+                        entity.PhoneNumber = SupremeUser.PhoneNumber;
+                        entity.Password = SupremeUser.Password;
+                        entity.SupremeAccess = SupremeUser.SupremeAccess;
                         await Task.CompletedTask;
                     });
                     return Ok(new { message = "Updated" });

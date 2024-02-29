@@ -17,7 +17,7 @@ namespace User_Management_System.AuthorizationResources
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, SupremeAccessRequirement requirement)
         {
 
-            var userInDb = _dbContext.SupremeUsers.FirstOrDefault(x => x.UniqueId == context.User.FindFirstValue(ClaimTypes.SerialNumber));
+            var userInDb = _dbContext.SupremeUsers.FirstOrDefault(x => x.UserUniqueId == context.User.FindFirstValue(ClaimTypes.SerialNumber));
             if (context.User.HasClaim(c => c.Type == "SupremeAcces" && bool.TryParse(c.Value, out bool supremeAcces) && supremeAcces) && userInDb.SupremeAccess == true)
             {
                 context.Succeed(requirement);

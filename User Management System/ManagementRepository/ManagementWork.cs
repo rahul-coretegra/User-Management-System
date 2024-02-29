@@ -16,13 +16,20 @@ namespace User_Management_System.ManagementRepository
             _appsettings = settings;
 
             Projects = new ProjectRepository(_context);
-            SupremeUsers = new SupremeUserRepository(_context,_appsettings);
+            SupremeUsers = new SupremeUserRepository(_context, _appsettings);
+            Items = new ItemRepository(_context);
+            Services = new ServiceRepository(_context);
 
         }
 
         public IProjectReporistory Projects { private set; get; }
 
         public ISupremeUserRepository SupremeUsers { private set; get; }
+
+        public IItemRepository Items { private set; get; }
+
+        public IServiceRepository Services { private set; get; }
+
 
         public string UniqueId()
         {

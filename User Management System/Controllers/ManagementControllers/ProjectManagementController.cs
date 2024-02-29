@@ -19,7 +19,7 @@ namespace User_Management_System.Controllers.ManagementControllers
             _dbContextConfigurations = dbContextConfigurations;
         }
 
-        [HttpGet(SDRoutes.Project)]
+        [HttpGet(SDRoutes.Get)]
         public async Task<IActionResult> GetProject(string ProjectUniqueId)
         {
             try
@@ -35,9 +35,8 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-
-        [HttpGet(SDRoutes.Projects)]
-        public async Task<IActionResult> GetProjects()
+        [HttpGet(SDRoutes.GetAll)]
+        public async Task<IActionResult> GetAllProjects()
         {
             try
             {
@@ -50,9 +49,7 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-
-
-        [HttpPost(SDRoutes.CreateProject)]
+        [HttpPost(SDRoutes.Create)]
         public async Task<IActionResult> CreateProject([FromBody] Project Project)
         {
             if (ModelState.IsValid)
@@ -81,8 +78,8 @@ namespace User_Management_System.Controllers.ManagementControllers
                 return BadRequest(new { message = "BadRequest" });
         }
 
-        [HttpPut(SDRoutes.UpadateProject)]
-        public async Task<IActionResult> UpdateProject([FromBody] Project Project)
+        [HttpPut(SDRoutes.Update)]
+        public async Task<IActionResult> UpdateProjects([FromBody] Project Project)
         {
             if (ModelState.IsValid)
             {
@@ -114,5 +111,6 @@ namespace User_Management_System.Controllers.ManagementControllers
             else
                 return BadRequest(new { message = "BadRequest" });
         }
+
     }
 }

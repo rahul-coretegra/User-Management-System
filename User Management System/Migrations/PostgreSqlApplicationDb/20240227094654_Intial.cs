@@ -6,10 +6,26 @@ using Npgsql.EntityFrameworkCore.PostgreSQL.Metadata;
 
 namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 {
-    public partial class AddInitial : Migration
+    public partial class Intial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ConfigurationItems",
+                columns: table => new
+                {
+                    ItemUniqueId = table.Column<string>(type: "text", nullable: false),
+                    Id = table.Column<int>(type: "integer", nullable: false)
+                        .Annotation("Npgsql:ValueGenerationStrategy", NpgsqlValueGenerationStrategy.IdentityByDefaultColumn),
+                    ItemName = table.Column<string>(type: "text", nullable: false),
+                    ItemValue = table.Column<string>(type: "text", nullable: false),
+                    ServiceType = table.Column<int>(type: "integer", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConfigurationItems", x => x.ItemUniqueId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Menus",
                 columns: table => new
@@ -199,6 +215,9 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ConfigurationItems");
+
             migrationBuilder.DropTable(
                 name: "RoleAndAccess");
 

@@ -22,6 +22,31 @@ namespace User_Management_System.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("User_Management_System.ManagementModels.Item", b =>
+                {
+                    b.Property<string>("ItemUniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ItemId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ItemId"));
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ServiceUniqueId")
+                        .HasColumnType("text");
+
+                    b.HasKey("ItemUniqueId");
+
+                    b.HasIndex("ServiceUniqueId");
+
+                    b.ToTable("Items", (string)null);
+                });
+
             modelBuilder.Entity("User_Management_System.ManagementModels.Project", b =>
                 {
                     b.Property<string>("ProjectUniqueId")
@@ -61,12 +86,35 @@ namespace User_Management_System.Migrations
 
                     b.HasKey("ProjectUniqueId");
 
-                    b.ToTable("Projects");
+                    b.ToTable("Projects", (string)null);
+                });
+
+            modelBuilder.Entity("User_Management_System.ManagementModels.Service", b =>
+                {
+                    b.Property<string>("ServiceUniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("ServiceId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ServiceId"));
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ServiceType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ServiceUniqueId");
+
+                    b.ToTable("Services", (string)null);
                 });
 
             modelBuilder.Entity("User_Management_System.ManagementModels.SupremeUser", b =>
                 {
-                    b.Property<string>("UniqueId")
+                    b.Property<string>("UserUniqueId")
                         .HasColumnType("text");
 
                     b.Property<DateTime?>("CreatedAt")
@@ -75,12 +123,6 @@ namespace User_Management_System.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Password")
                         .IsRequired()
@@ -96,13 +138,33 @@ namespace User_Management_System.Migrations
                     b.Property<string>("Token")
                         .HasColumnType("text");
 
+                    b.Property<int>("UserId")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("UserId"));
+
                     b.Property<string>("UserName")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("UniqueId");
+                    b.HasKey("UserUniqueId");
 
-                    b.ToTable("SupremeUsers");
+                    b.ToTable("SupremeUsers", (string)null);
+                });
+
+            modelBuilder.Entity("User_Management_System.ManagementModels.Item", b =>
+                {
+                    b.HasOne("User_Management_System.ManagementModels.Service", "Service")
+                        .WithMany("Items")
+                        .HasForeignKey("ServiceUniqueId");
+
+                    b.Navigation("Service");
+                });
+
+            modelBuilder.Entity("User_Management_System.ManagementModels.Service", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }

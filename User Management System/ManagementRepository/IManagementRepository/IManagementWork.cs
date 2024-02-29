@@ -8,6 +8,10 @@ namespace User_Management_System.ManagementRepository.IManagementRepository
 
         ISupremeUserRepository SupremeUsers { get; }
 
+        IItemRepository Items { get; }
+
+        IServiceRepository Services { get; }
+
         string UniqueId();
     }
 }

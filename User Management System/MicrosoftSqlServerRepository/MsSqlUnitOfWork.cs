@@ -21,6 +21,9 @@ namespace User_Management_System.MicrosoftSqlServerRepository
             RoleAndAccess = new RoleAndAccessRepository(_context);
             Menus = new MenuRepository(_context);
             RoleAndMenus = new RoleAndMenusRepository(_context);
+            Items = new ItemRepository(_context);
+            ConfigureServices = new ConfigureServiceRepository(_context);
+
 
         }
         public IUserRoleRepository UserRoles { private set; get; }
@@ -36,6 +39,10 @@ namespace User_Management_System.MicrosoftSqlServerRepository
         public IMenuRepository Menus { private set; get; }
 
         public IRoleAndMenusRepository RoleAndMenus { private set; get; }
+
+        public IItemRepository Items { private set; get; }
+
+        public IConfigureServiceRepository ConfigureServices { private set; get; }
 
     }
 }

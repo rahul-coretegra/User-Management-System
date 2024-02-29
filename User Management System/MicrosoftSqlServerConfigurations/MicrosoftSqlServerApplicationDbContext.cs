@@ -23,6 +23,10 @@ namespace User_Management_System.MicrosoftSqlServerConfigurations
 
         public DbSet<RoleAndMenus> RoleAndMenus { get; set; }
 
+        public DbSet<Item> Items { get; set; }
+
+        public DbSet<ConfigureService> ConfigureServices { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
@@ -56,6 +60,11 @@ namespace User_Management_System.MicrosoftSqlServerConfigurations
                 .HasOne(ura => ura.Menu)
                 .WithMany()
                 .HasForeignKey(ura => ura.MenuId);
+
+            modelBuilder.Entity<ConfigureService>()
+                .HasMany(c => c.Items)
+                .WithOne()
+                .IsRequired();
         }
     }
 }

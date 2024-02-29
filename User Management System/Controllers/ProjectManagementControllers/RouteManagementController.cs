@@ -1,29 +1,29 @@
-﻿using Microsoft.AspNetCore.Authorization;
+﻿using Amazon.Auth.AccessControlPolicy;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
-using User_Management_System.ManagementModels;
 using User_Management_System.ManagementModels.EnumModels;
-using User_Management_System.ManagementModels.VMs;
 using User_Management_System.ManagementRepository.IManagementRepository;
 using User_Management_System.SD;
 
-namespace User_Management_System.Controllers.ManagementControllers
+namespace User_Management_System.Controllers.ProjectManagementControllers
 {
     [ApiController]
-    [Route(SDRoutes.UserRoleManagement)]
+    [Route(SDRoutes.RouteManagement)]
     [Authorize(Policy = SDPolicies.SupremeAccess)]
-    public class UserRoleManagementController : Controller
+    public class RouteManagementController : Controller
     {
         private readonly IManagementWork _management;
         private readonly IDbContextConfigurations _dbContextConfigurations;
 
-        public UserRoleManagementController(IManagementWork managementWork, IDbContextConfigurations dbContextConfigurations)
+        public RouteManagementController(IManagementWork managementWork, IDbContextConfigurations dbContextConfigurations)
         {
             _management = managementWork;
             _dbContextConfigurations = dbContextConfigurations;
         }
 
-        [HttpGet(SDRoutes.UserRole)]
-        public async Task<IActionResult> GetUserRole(string RoleId)
+        [HttpGet(SDRoutes.Get)]
+        public async Task<IActionResult> GetRoute(string RouteId)
         {
             try
             {
@@ -35,24 +35,59 @@ namespace User_Management_System.Controllers.ManagementControllers
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
-                    var role = await context.psqlUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleId == RoleId);
+                    var role = await context.psqlUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == RouteId);
                     if (role == null)
                         return NotFound(new { message = "NotFound" });
                     return Ok(role);
                 }
                 else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
                 {
-                    var role = await context.mssqlUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleId == RoleId);
+                    var role = await context.mssqlUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == RouteId);
                     if (role == null)
                         return NotFound(new { message = "NotFound" });
                     return Ok(role);
                 }
                 else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
                 {
-                    var role = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleId == RoleId);
+                    var role = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(filter: d => d.RouteId == RouteId);
                     if (role == null)
                         return NotFound(new { message = "NotFound" });
                     return Ok(role);
+                }
+                else
+                    return Ok();
+            }
+            catch (Exception)
+            {
+                return StatusCode(500, new { message = "Database Error" });
+            }
+        }
+
+        [HttpGet(SDRoutes.GetAll)]
+        public async Task<IActionResult> GetAllRoutes()
+        {
+            try
+            {
+                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
+                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
+                if (projectInDb == null)
+                    return NotFound();
+                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
+
+                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
+                {
+                    var list = await context.psqlUnitOfWork.Routes.GetAllAsync();
+                    return Ok(list);
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
+                {
+                    var list = await context.mssqlUnitOfWork.Routes.GetAllAsync();
+                    return Ok(list);
+                }
+                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
+                {
+                    var list = await context.mongoUnitOfWork.Routes.GetAllAsync();
+                    return Ok(list);
                 }
                 else return Ok();
             }
@@ -62,45 +97,8 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-
-        [HttpGet(SDRoutes.UserRoles)]
-        public async Task<IActionResult> GetUserRoles()
-        {
-            try
-            {
-                HttpContext.Request.Headers.TryGetValue("projectUniqueId", out var projectUniqueId);
-                var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == projectUniqueId.ToString());
-                if (projectInDb == null)
-                    return NotFound();
-                var context = _dbContextConfigurations.configureDbContexts(projectInDb);
-
-                if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
-                {
-                    var list = await context.psqlUnitOfWork.UserRoles.GetAllAsync();
-                    return Ok(list);
-                }
-                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
-                {
-                    var list = await context.mssqlUnitOfWork.UserRoles.GetAllAsync();
-                    return Ok(list);
-                }
-                else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
-                {
-                    var list = await context.mongoUnitOfWork.UserRoles.GetAllAsync();
-                    return Ok(list);
-                }
-                else
-                    return Ok();
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Database Error" });
-            }
-        }
-
-
-        [HttpPost(SDRoutes.CreateUserRole)]
-        public async Task<IActionResult> CreateUserRole([FromBody] UserRole UserRole)
+        [HttpPost(SDRoutes.Create)]
+        public async Task<IActionResult> CreateRoute([FromBody] ManagementModels.VMs.Route RouteVM)
         {
             try
             {
@@ -114,91 +112,56 @@ namespace User_Management_System.Controllers.ManagementControllers
 
                     if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                     {
-                        var indb = await context.psqlUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleName == UserRole.RoleName);
+                        var indb = await context.psqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RoutePath == RouteVM.RoutePath);
                         if (indb != null)
                             return BadRequest(new { message = "Exists" });
-                        if (UserRole.RoleName == SDValues.IndividualRole)
+                        else
                         {
-                            PostgreSqlModels.UserRole role = new PostgreSqlModels.UserRole()
+                            PostgreSqlModels.Route route = new PostgreSqlModels.Route()
                             {
-                                RoleName = SDValues.IndividualRole,
-                                RoleId = SDValues.IndividualRoleId,
-                                RoleLevel = RoleLevels.Primary,
+                                RouteId = _management.UniqueId(),
+                                RouteName = RouteVM.RouteName,
+                                RoutePath = RouteVM.RoutePath
                             };
-                            await context.psqlUnitOfWork.UserRoles.AddAsync(role);
+                            await context.psqlUnitOfWork.Routes.AddAsync(route);
+                            return Ok(new { message = "Created" });
                         }
-                        else 
-                        {
-                            PostgreSqlModels.UserRole role = new PostgreSqlModels.UserRole()
-                            {
-                                RoleName = UserRole.RoleName,
-                                RoleId = _management.UniqueId(),
-                                RoleLevel = UserRole.RoleLevel
-                            };
-                            await context.psqlUnitOfWork.UserRoles.AddAsync(role);
-
-                        }
-                        return Ok(new { message = "Created" });
                     }
-                    
+
                     else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
                     {
-                        var indb = await context.mssqlUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleName == UserRole.RoleName);
+                        var indb = await context.mssqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RoutePath == RouteVM.RoutePath);
                         if (indb != null)
                             return BadRequest(new { message = "Exists" });
-                        if (UserRole.RoleName == SDValues.IndividualRole)
-                        {
-                            MicrosoftSqlServerModels.UserRole role = new MicrosoftSqlServerModels.UserRole()
-                            {
-                                RoleName = SDValues.IndividualRole,
-                                RoleId = SDValues.IndividualRoleId,
-                                RoleLevel = RoleLevels.Primary,
-                            };
-                            await context.mssqlUnitOfWork.UserRoles.AddAsync(role);
-                        }
                         else
                         {
-                            MicrosoftSqlServerModels.UserRole role = new MicrosoftSqlServerModels.UserRole()
+                            MicrosoftSqlServerModels.Route route = new MicrosoftSqlServerModels.Route()
                             {
-                                RoleName = UserRole.RoleName,
-                                RoleId = _management.UniqueId(),
-                                RoleLevel = UserRole.RoleLevel
+                                RouteId = _management.UniqueId(),
+                                RouteName = RouteVM.RouteName,
+                                RoutePath = RouteVM.RoutePath
                             };
-                            await context.mssqlUnitOfWork.UserRoles.AddAsync(role);
-
+                            await context.mssqlUnitOfWork.Routes.AddAsync(route);
+                            return Ok(new { message = "Created" });
                         }
-                        return Ok(new { message = "Created" });
                     }
-
                     else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
                     {
-                        var indb = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleName == UserRole.RoleName);
+                        var indb = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RoutePath == RouteVM.RoutePath);
                         if (indb != null)
                             return BadRequest(new { message = "Exists" });
-                        if (UserRole.RoleName == SDValues.IndividualRole)
-                        {
-                            MongoDbModels.UserRole role = new MongoDbModels.UserRole()
-                            {
-                                RoleName = SDValues.IndividualRole,
-                                RoleId = SDValues.IndividualRoleId,
-                                RoleLevel = RoleLevels.Primary,
-                            };
-                            await context.mongoUnitOfWork.UserRoles.AddAsync(role);
-                        }
                         else
                         {
-                            MongoDbModels.UserRole role = new MongoDbModels.UserRole()
+                            MongoDbModels.Route route = new MongoDbModels.Route()
                             {
-                                RoleName = UserRole.RoleName,
-                                RoleId = _management.UniqueId(),
-                                RoleLevel = UserRole.RoleLevel
+                                RouteId = _management.UniqueId(),
+                                RouteName = RouteVM.RouteName,
+                                RoutePath = RouteVM.RoutePath
                             };
-                            await context.mongoUnitOfWork.UserRoles.AddAsync(role);
-
+                            await context.mongoUnitOfWork.Routes.AddAsync(route);
+                            return Ok(new { message = "Created" });
                         }
-                        return Ok(new { message = "Created" });
                     }
-
                     else
                         return Ok();
                 }
@@ -211,8 +174,8 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-        [HttpPut(SDRoutes.UpadateUserRole)]
-        public async Task<IActionResult> UpdateUserRole([FromBody] UserRole UserRole)
+        [HttpPut(SDRoutes.Update)]
+        public async Task<IActionResult> UpdateRoute([FromBody] ManagementModels.VMs.Route RouteVM)
         {
             try
             {
@@ -226,19 +189,20 @@ namespace User_Management_System.Controllers.ManagementControllers
 
                     if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                     {
-                        var indb = await context.psqlUnitOfWork.UserRoles.GetAsync(UserRole.RoleId);
+                        var indb = await context.psqlUnitOfWork.Routes.GetAsync(RouteVM.RouteId);
                         if (indb == null)
                             return NotFound(new { message = "Not Found" });
 
-                        var indbExists = await context.psqlUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleId != indb.RoleId && d.RoleName == UserRole.RoleName);
+                        var indbExists = await context.psqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != indb.RouteId && d.RoutePath == RouteVM.RoutePath);
 
                         if (indbExists != null)
                             return BadRequest(new { message = "Exists" });
 
-                        await context.psqlUnitOfWork.UserRoles.UpdateAsync(indb.RoleId, async entity =>
+                        await context.psqlUnitOfWork.Routes.UpdateAsync(indb.RouteId, async entity =>
                         {
-                            entity.RoleName = UserRole.RoleName;
-                            entity.RoleLevel = UserRole.RoleLevel;
+                            entity.RoutePath = RouteVM.RoutePath;
+                            entity.RouteName = RouteVM.RouteName;
+
                             await Task.CompletedTask;
                         });
 
@@ -246,42 +210,40 @@ namespace User_Management_System.Controllers.ManagementControllers
                     }
                     else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
                     {
-                        var indb = await context.mssqlUnitOfWork.UserRoles.GetAsync(UserRole.RoleId);
+                        var indb = await context.mssqlUnitOfWork.Routes.GetAsync(RouteVM.RouteId);
                         if (indb == null)
                             return NotFound(new { message = "Not Found" });
 
-                        var indbExists = await context.mssqlUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleId != indb.RoleId && d.RoleName == UserRole.RoleName);
+                        var indbExists = await context.mssqlUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != indb.RouteId && d.RoutePath == RouteVM.RoutePath);
 
                         if (indbExists != null)
                             return BadRequest(new { message = "Exists" });
 
-                        await context.mssqlUnitOfWork.UserRoles.UpdateAsync(indb.RoleId, async entity =>
+                        await context.mssqlUnitOfWork.Routes.UpdateAsync(indb.RouteId, async entity =>
                         {
-                            entity.RoleName = UserRole.RoleName;
-                            entity.RoleLevel = UserRole.RoleLevel;
+                            entity.RoutePath = RouteVM.RoutePath;
+                            entity.RouteName = RouteVM.RouteName;
                             await Task.CompletedTask;
                         });
-
                         return Ok(new { message = "Updated" });
                     }
                     else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
                     {
-                        var indb = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(x=>x.RoleId ==UserRole.RoleId);
+                        var indb = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(x => x.RouteId == RouteVM.RouteId);
                         if (indb == null)
                             return NotFound(new { message = "Not Found" });
 
-                        var indbExists = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(d => d.RoleId != indb.RoleId && d.RoleName == UserRole.RoleName);
+                        var indbExists = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(d => d.RouteId != indb.RouteId && d.RoutePath == RouteVM.RoutePath);
 
                         if (indbExists != null)
                             return BadRequest(new { message = "Exists" });
 
-                        await context.mongoUnitOfWork.UserRoles.UpdateAsync(x => x.RoleId == indb.RoleId, async entity =>
+                        await context.mongoUnitOfWork.Routes.UpdateAsync(x => x.RouteId == indb.RouteId, async entity =>
                         {
-                            entity.RoleName = UserRole.RoleName;
-                            entity.RoleLevel = UserRole.RoleLevel;
+                            entity.RoutePath = RouteVM.RoutePath;
+                            entity.RouteName = RouteVM.RouteName;
                             await Task.CompletedTask;
                         });
-
                         return Ok(new { message = "Updated" });
                     }
                     else
@@ -297,8 +259,8 @@ namespace User_Management_System.Controllers.ManagementControllers
             }
         }
 
-        [HttpDelete(SDRoutes.DeleteUserRole)]
-        public async Task<IActionResult> DeleteUserRole(string RoleId)
+        [HttpDelete(SDRoutes.Delete)]
+        public async Task<IActionResult> DeleteRoute(string RouteId)
         {
             try
             {
@@ -310,45 +272,44 @@ namespace User_Management_System.Controllers.ManagementControllers
 
                 if (projectInDb.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
-                    var indb = await context.psqlUnitOfWork.UserRoles.GetAsync(RoleId);
+                    var indb = await context.psqlUnitOfWork.Routes.GetAsync(RouteId);
                     if (indb == null)
                         return NotFound(new { message = "Not Found" });
 
-                    var propshave = await context.psqlUnitOfWork.UserAndRoles.FirstOrDefaultAsync(ur => ur.RoleId == indb.RoleId);
+                    var propshave = await context.psqlUnitOfWork.RoleAndAccess.FirstOrDefaultAsync(ur => ur.RouteId == indb.RouteId && ur.IsAccess == TrueFalse.True);
                     if (propshave != null)
                         return BadRequest(new { message = "ObjectDepends" });
 
-                    await context.psqlUnitOfWork.UserRoles.RemoveAsync(RoleId);
+                    await context.psqlUnitOfWork.Routes.RemoveAsync(RouteId);
                     return Ok(new { message = "Deleted" });
                 }
                 else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
                 {
-                    var indb = await context.mssqlUnitOfWork.UserRoles.GetAsync(RoleId);
+                    var indb = await context.mssqlUnitOfWork.Routes.GetAsync(RouteId);
                     if (indb == null)
                         return NotFound(new { message = "Not Found" });
 
-                    var propshave = await context.mssqlUnitOfWork.UserAndRoles.FirstOrDefaultAsync(ur => ur.RoleId == indb.RoleId);
+                    var propshave = await context.mssqlUnitOfWork.RoleAndAccess.FirstOrDefaultAsync(ur => ur.RouteId == indb.RouteId && ur.IsAccess == TrueFalse.True);
                     if (propshave != null)
                         return BadRequest(new { message = "ObjectDepends" });
 
-                    await context.mssqlUnitOfWork.UserRoles.RemoveAsync(RoleId);
+                    await context.mssqlUnitOfWork.Routes.RemoveAsync(RouteId);
                     return Ok(new { message = "Deleted" });
                 }
                 else if (projectInDb.TypeOfDatabase == TypeOfDatabase.MongoDb)
                 {
-                    var indb = await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(x=>x.RoleId==RoleId);
+                    var indb = await context.mongoUnitOfWork.Routes.FirstOrDefaultAsync(m => m.RouteId == RouteId);
                     if (indb == null)
                         return NotFound(new { message = "Not Found" });
 
-                    var propshave = await context.mongoUnitOfWork.UserAndRoles.FirstOrDefaultAsync(ur => ur.RoleId == indb.RoleId);
+                    var propshave = await context.mongoUnitOfWork.RoleAndAccess.FirstOrDefaultAsync(ur => ur.RouteId == indb.RouteId && ur.IsAccess == TrueFalse.True);
                     if (propshave != null)
                         return BadRequest(new { message = "ObjectDepends" });
 
-                    await context.mongoUnitOfWork.UserRoles.FirstOrDefaultAsync(x => x.RoleId == RoleId);
+                    await context.mongoUnitOfWork.Routes.RemoveAsync(m => m.RouteId == RouteId);
                     return Ok(new { message = "Deleted" });
                 }
-                else 
-                    return Ok();
+                else return Ok();
             }
             catch (Exception)
             {
@@ -356,5 +317,6 @@ namespace User_Management_System.Controllers.ManagementControllers
 
             }
         }
+
     }
 }

@@ -12,8 +12,8 @@ using User_Management_System.PostgreSqlConfigurations;
 namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 {
     [DbContext(typeof(PostgreSqlApplicationDbContext))]
-    [Migration("20240220092400_AddInitial")]
-    partial class AddInitial
+    [Migration("20240227094654_Intial")]
+    partial class Intial
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -23,6 +23,33 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
+
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.ConfigurationItem", b =>
+                {
+                    b.Property<string>("ItemUniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ItemValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ServiceType")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ItemUniqueId");
+
+                    b.ToTable("ConfigurationItems");
+                });
 
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.Menu", b =>
                 {

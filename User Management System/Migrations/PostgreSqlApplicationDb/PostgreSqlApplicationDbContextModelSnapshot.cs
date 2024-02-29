@@ -22,6 +22,63 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.ConfigureService", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ServiceType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ServiceUniqueId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UniqueId");
+
+                    b.ToTable("ConfigureServices");
+                });
+
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Item", b =>
+                {
+                    b.Property<string>("ItemId")
+                        .HasColumnType("text");
+
+                    b.Property<string>("ConfigureServiceUniqueId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ItemValue")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("ItemId");
+
+                    b.HasIndex("ConfigureServiceUniqueId");
+
+                    b.ToTable("Items");
+                });
+
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.Menu", b =>
                 {
                     b.Property<string>("MenuId")
@@ -252,6 +309,15 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.ToTable("UserRoles");
                 });
 
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Item", b =>
+                {
+                    b.HasOne("User_Management_System.PostgreSqlModels.ConfigureService", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ConfigureServiceUniqueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAndAccess", b =>
                 {
                     b.HasOne("User_Management_System.PostgreSqlModels.UserRole", "UserRole")
@@ -307,6 +373,11 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.Navigation("User");
 
                     b.Navigation("UserRole");
+                });
+
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.ConfigureService", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }
