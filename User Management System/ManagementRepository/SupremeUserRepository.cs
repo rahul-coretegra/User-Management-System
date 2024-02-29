@@ -32,7 +32,7 @@ namespace User_Management_System.ManagementRepository
 
         public async Task<string> Authenticate(string Identity)
         {
-            var userindb = await _context.SupremeUsers.FirstOrDefaultAsync(x => x.PhoneNumber == Identity || x.UniqueId == Identity || x.Email == Identity);
+            var userindb = await _context.SupremeUsers.FirstOrDefaultAsync(x => x.PhoneNumber == Identity || x.UserUniqueId == Identity || x.Email == Identity);
             if (userindb == null)
                 return null;
             //jwt
@@ -42,7 +42,7 @@ namespace User_Management_System.ManagementRepository
             {
                 Subject = new ClaimsIdentity(new Claim[]
                 {
-                    new Claim(ClaimTypes.SerialNumber, userindb.UniqueId),
+                    new Claim(ClaimTypes.SerialNumber, userindb.UserUniqueId),
                     new Claim(ClaimTypes.MobilePhone, userindb.PhoneNumber),
                     new Claim(ClaimTypes.Email, userindb.Email),
                     new Claim("SupremeAcces", userindb.SupremeAccess? "true" : "false")

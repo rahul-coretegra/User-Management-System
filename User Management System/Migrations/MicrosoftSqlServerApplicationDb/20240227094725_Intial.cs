@@ -5,10 +5,26 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 {
-    public partial class AddInitial : Migration
+    public partial class Intial : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.CreateTable(
+                name: "ConfigurationItems",
+                columns: table => new
+                {
+                    ItemUniqueId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    ItemName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ItemValue = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    ServiceType = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_ConfigurationItems", x => x.ItemUniqueId);
+                });
+
             migrationBuilder.CreateTable(
                 name: "Menus",
                 columns: table => new
@@ -213,6 +229,9 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 
         protected override void Down(MigrationBuilder migrationBuilder)
         {
+            migrationBuilder.DropTable(
+                name: "ConfigurationItems");
+
             migrationBuilder.DropTable(
                 name: "RoleAndAccess");
 

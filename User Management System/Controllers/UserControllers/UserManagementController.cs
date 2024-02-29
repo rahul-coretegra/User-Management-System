@@ -23,7 +23,7 @@ namespace User_Management_System.Controllers.UserControllers
             _management = management;
         }
 
-        [HttpGet(SDRoutes.User)]
+        [HttpGet(SDRoutes.Get)]
         public async Task<IActionResult> GetUser(string Identity)
         {
             try
@@ -115,8 +115,8 @@ namespace User_Management_System.Controllers.UserControllers
             }
         }
 
-        [HttpGet(SDRoutes.Users)]
-        public async Task<IActionResult> GetUsers(string RoleId)
+        [HttpGet(SDRoutes.GetAll)]
+        public async Task<IActionResult> GetAllUsers(string RoleId)
         {
             try
             {
@@ -240,8 +240,7 @@ namespace User_Management_System.Controllers.UserControllers
             }
         }
 
-
-        [HttpPost(SDRoutes.RegisterUser)]
+        [HttpPost(SDRoutes.Register)]
         public async Task<IActionResult> RegisterUser([FromBody] User User)
         {
             try
@@ -365,7 +364,7 @@ namespace User_Management_System.Controllers.UserControllers
             }
         }
 
-        [HttpPut(SDRoutes.UpdateUser)]
+        [HttpPut(SDRoutes.Update)]
         public async Task<IActionResult> UpdateUser([FromBody] User User)
         {
             try
@@ -551,8 +550,8 @@ namespace User_Management_System.Controllers.UserControllers
             }
         }
 
-        [HttpPost(SDRoutes.UpsertUserAndRoles)]
-        public async Task<IActionResult> UpsertUserAndRoles([FromBody] UserAndRoles[] UserRoles)
+        [HttpPost(SDRoutes.UpSertUserAccess)]
+        public async Task<IActionResult> UpSertUserAccessOfRoles([FromBody] UserAndRoles[] UserRoles)
         {
             try
             {

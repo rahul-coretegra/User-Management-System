@@ -6,10 +6,10 @@ namespace User_Management_System.ManagementModels
     public class SupremeUser
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
-        public int Id { get; set; }
+        public int UserId { get; set; }
 
         [Key]
-        public string UniqueId { get; set; }
+        public string UserUniqueId { get; set; }
 
         [Required]
         public string UserName { get; set; }

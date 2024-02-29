@@ -2,7 +2,7 @@
 {
     public enum RoleLevels
     {
-        Primary,
+        Primary = 1,
         Secondary,
         Intermediate,
         Authority,
@@ -10,7 +10,27 @@
     }
     public enum TrueFalse
     {
-        False,
-        True
+        True=1,
+        False
     }
+
+    public enum TypeOfDatabase
+    {
+        PostgreSql=1,
+        MicrosoftSqlServer,
+        MongoDb
+    }
+    public enum TypeOfService
+    {
+        AwsSimpleEmail = 1,
+        AwsSimpleNotification,
+        ElasticMailEmail,
+        ElasticMailSms,
+        ErrorHandler,
+        NexmoSms,
+        PostMarkEmail,
+        TwilioSendGridEmail,
+        TwilioSms
+    }
+
 }

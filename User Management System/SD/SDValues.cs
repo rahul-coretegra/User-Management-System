@@ -9,5 +9,7 @@
 
         public const string ConstantStringKey = "ABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890";
 
+        public const string TwilioSms = "TwilioSms";
+
     }
 }

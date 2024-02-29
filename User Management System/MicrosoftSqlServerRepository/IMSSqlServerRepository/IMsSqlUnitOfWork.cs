@@ -16,5 +16,10 @@
 
         IRoleAndMenusRepository RoleAndMenus { get; }
 
+        IItemRepository Items { get; }
+
+        IConfigureServiceRepository ConfigureServices { get; }
+
+
     }
 }

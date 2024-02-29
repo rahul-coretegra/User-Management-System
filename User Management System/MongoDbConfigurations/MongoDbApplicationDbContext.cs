@@ -20,7 +20,8 @@ namespace User_Management_System.MongoDbConfigurations
         public IMongoCollection<RoleAndAccess> RoleAndAccess => Database.GetCollection<RoleAndAccess>("RoleAndAccess");
         public IMongoCollection<Menu> Menu => Database.GetCollection<Menu>("Menu");
         public IMongoCollection<RoleAndMenus> RoleAndMenus => Database.GetCollection<RoleAndMenus>("RoleAndMenus");
-
+        public IMongoCollection<Item> Item => Database.GetCollection<Item>("Item");
+        public IMongoCollection<ConfigureService> ConfigureService => Database.GetCollection<ConfigureService>("ConfigureService");
 
     }
 }

@@ -22,6 +22,63 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder, 1L, 1);
 
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.ConfigureService", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServiceType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceUniqueId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("UniqueId");
+
+                    b.ToTable("ConfigureServices");
+                });
+
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Item", b =>
+                {
+                    b.Property<string>("ItemId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("ConfigureServiceUniqueId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemValue")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("ItemId");
+
+                    b.HasIndex("ConfigureServiceUniqueId");
+
+                    b.ToTable("Items");
+                });
+
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Menu", b =>
                 {
                     b.Property<string>("MenuId")
@@ -276,6 +333,15 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.ToTable("Routes");
                 });
 
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Item", b =>
+                {
+                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.ConfigureService", null)
+                        .WithMany("Items")
+                        .HasForeignKey("ConfigureServiceUniqueId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+                });
+
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndAccess", b =>
                 {
                     b.HasOne("User_Management_System.MicrosoftSqlServerModels.UserRole", "UserRole")
@@ -331,6 +397,11 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.Navigation("User");
 
                     b.Navigation("UserRole");
+                });
+
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.ConfigureService", b =>
+                {
+                    b.Navigation("Items");
                 });
 #pragma warning restore 612, 618
         }
