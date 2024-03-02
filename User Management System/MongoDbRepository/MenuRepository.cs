@@ -5,7 +5,7 @@ using User_Management_System.MongoDbRepository.IMongoRepository;
 
 namespace User_Management_System.MongoDbRepository
 {
-    public class MenuRepository:Repository<Menu>, IMenuRepository
+    public class MenuRepository : Repository<Menu>, IMenuRepository
     {
         private readonly MongoDbApplicationDbContext _context;
 
@@ -16,20 +16,28 @@ namespace User_Management_System.MongoDbRepository
 
         public object GetMenuWithSubmenus(Menu Menu, List<Menu> AllMenus)
         {
-            return new
+            try
             {
-                id = Menu.Id,
-                UniqueId = Menu.MenuId,
-                MenuName = Menu.MenuName,
-                MenuPath = Menu.MenuPath,
-                MenuIcon = Menu.MenuIcon,
-                Status = Menu.Status,
-                ParentId = Menu.ParentId,
-                SubMenus = AllMenus
-                    .Where(subMenu => subMenu.ParentId == Menu.MenuId)
-                    .Select(subMenu => GetMenuWithSubmenus(subMenu, AllMenus))
-                    .ToList()
-            };
+                return new
+                {
+                    id = Menu.Id,
+                    UniqueId = Menu.MenuId,
+                    MenuName = Menu.MenuName,
+                    MenuPath = Menu.MenuPath,
+                    MenuIcon = Menu.MenuIcon,
+                    Status = Menu.Status,
+                    ParentId = Menu.ParentId,
+                    SubMenus = AllMenus
+                                   .Where(subMenu => subMenu.ParentId == Menu.MenuId)
+                                   .Select(subMenu => GetMenuWithSubmenus(subMenu, AllMenus))
+                                   .ToList()
+                };
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
     }
 }

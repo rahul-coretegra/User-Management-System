@@ -17,8 +17,8 @@ namespace User_Management_System.ManagementRepository
 
             Projects = new ProjectRepository(_context);
             SupremeUsers = new SupremeUserRepository(_context, _appsettings);
-            Items = new ItemRepository(_context);
             Services = new ServiceRepository(_context);
+            ConfigureServices = new ConfigureServiceRepository(_context);
 
         }
 
@@ -26,21 +26,29 @@ namespace User_Management_System.ManagementRepository
 
         public ISupremeUserRepository SupremeUsers { private set; get; }
 
-        public IItemRepository Items { private set; get; }
-
         public IServiceRepository Services { private set; get; }
+
+        public IConfigureServiceRepository ConfigureServices { private set; get; }
 
 
         public string UniqueId()
         {
-            DateTime now = DateTime.Now;
-            Random random = new Random();
+            try
+            {
+                DateTime now = DateTime.Now;
+                Random random = new Random();
 
-            string additionalDigits = new string(Enumerable.Repeat(SDValues.ConstantStringKey, 6).Select(s => s[random.Next(s.Length)]).ToArray());
+                string additionalDigits = new string(Enumerable.Repeat(SDValues.ConstantStringKey, 6).Select(s => s[random.Next(s.Length)]).ToArray());
 
-            string UniqueId = $"{additionalDigits}{now:yyyymmddHHssffff}";
+                string UniqueId = $"{additionalDigits}{now:yyyymmddHHssffff}";
 
-            return UniqueId;
+                return UniqueId;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
     }

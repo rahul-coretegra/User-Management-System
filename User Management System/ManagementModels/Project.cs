@@ -25,12 +25,15 @@ namespace User_Management_System.ManagementModels
         public TypeOfDatabase TypeOfDatabase { get; set; }
 
         [Required]
-        public TrueFalse IsDatabaseExists { get; set; }
-
-        [Required]
         public string ConnectionString { get; set; }
 
         [Required]
         public string DatabaseName { get; set; }
+
+        [Required]
+        public TrueFalse MigrateDatabase { get; set; }
+
+        [Required]
+        public TrueFalse Status { get; set; }
     }
 }

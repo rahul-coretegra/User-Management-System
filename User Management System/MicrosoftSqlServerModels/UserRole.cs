@@ -19,5 +19,9 @@ namespace User_Management_System.MicrosoftSqlServerModels
 
         [Required]
         public RoleLevels RoleLevel { get; set; }
+
+        [Required]
+        public TrueFalse Status { get; set; }
+
     }
 }

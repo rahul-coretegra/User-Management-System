@@ -15,13 +15,12 @@ namespace User_Management_System.MongoDbConfigurations
 
         public IMongoCollection<User> User => Database.GetCollection<User>("User");
         public IMongoCollection<UserRole> UserRole => Database.GetCollection<UserRole>("UserRole");
-        public IMongoCollection<UserAndRoles> UserAndRoles => Database.GetCollection<UserAndRoles>("UserAndRoles");
+        public IMongoCollection<RoleAccess> RoleAccess => Database.GetCollection<RoleAccess>("RoleAccess");
         public IMongoCollection<MongoDbModels.Route> Route => Database.GetCollection<MongoDbModels.Route>("Route");
-        public IMongoCollection<RoleAndAccess> RoleAndAccess => Database.GetCollection<RoleAndAccess>("RoleAndAccess");
+        public IMongoCollection<RouteAccess> RouteAccess => Database.GetCollection<RouteAccess>("RouteAccess");
         public IMongoCollection<Menu> Menu => Database.GetCollection<Menu>("Menu");
-        public IMongoCollection<RoleAndMenus> RoleAndMenus => Database.GetCollection<RoleAndMenus>("RoleAndMenus");
-        public IMongoCollection<Item> Item => Database.GetCollection<Item>("Item");
-        public IMongoCollection<ConfigureService> ConfigureService => Database.GetCollection<ConfigureService>("ConfigureService");
+        public IMongoCollection<MenuAccess> MenuAccess => Database.GetCollection<MenuAccess>("MenuAccess");
+        public IMongoCollection<Service> Service => Database.GetCollection<Service>("Service");
 
     }
 }

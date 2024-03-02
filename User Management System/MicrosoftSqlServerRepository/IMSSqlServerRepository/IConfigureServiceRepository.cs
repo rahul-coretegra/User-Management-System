@@ -1,6 +1,6 @@
-﻿using User_Management_System.MongoDbModels;
+﻿using User_Management_System.MicrosoftSqlServerModels;
 
-namespace User_Management_System.MongoDbRepository.IMongoRepository
+namespace User_Management_System.MicrosoftSqlServerRepository.IMSSqlServerRepository
 {
     public interface IConfigureServiceRepository:IRepository<ConfigureService>
     {

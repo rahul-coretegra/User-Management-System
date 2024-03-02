@@ -1,12 +1,14 @@
-﻿using User_Management_System.ManagementModels.EnumModels;
+﻿using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using User_Management_System.ManagementModels.EnumModels;
 using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
+using System.Text.Json.Serialization;
 
 namespace User_Management_System.MongoDbModels
 {
     public class ConfigureService
     {
-
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
         public string Id { get; set; }
@@ -14,15 +16,20 @@ namespace User_Management_System.MongoDbModels
         public string UniqueId { get; set; }
 
         [BsonRequired]
-        public string ServiceUniqueId { get; set; }
+        public string ItemUniqueId { get; set; }
 
         [BsonRequired]
-        public string ServiceName { get; set; }
+        public string ItemName { get; set; }
 
         [BsonRequired]
-        public TypeOfService ServiceType { get; set; }
+        public string ItemValue { get; set; }
 
-        public List<Item> Items { get; set; }
+        [BsonRequired]
+        public string ServiceId { get; set; }
 
+        public Service Service { get; set; }
+
+        [BsonRequired]
+        public TrueFalse IsConfigured { get; set; }
     }
 }

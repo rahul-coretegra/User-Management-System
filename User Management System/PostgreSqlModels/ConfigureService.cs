@@ -4,7 +4,6 @@ using User_Management_System.ManagementModels.EnumModels;
 
 namespace User_Management_System.PostgreSqlModels
 {
-    
     public class ConfigureService
     {
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
@@ -14,15 +13,21 @@ namespace User_Management_System.PostgreSqlModels
         public string UniqueId { get; set; }
 
         [Required]
-        public string ServiceUniqueId { get; set; }
+        public string ItemUniqueId { get; set; }
 
         [Required]
-        public string ServiceName { get; set; }
+        public string ItemName { get; set; }
 
         [Required]
-        public TypeOfService ServiceType { get; set; }
+        public string ItemValue { get; set; }
 
-        public List<Item> Items { get; set; }
+        [Required]
+        public string ServiceId { get; set; }
+
+        public Service Service { get; set; }
+
+        [Required]
+        public TrueFalse IsConfigured { get; set; }
 
     }
 }

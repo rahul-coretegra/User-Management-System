@@ -19,31 +19,54 @@ namespace User_Management_System.PostgreSqlRepository
 
         public async Task<T> GetAsync(string code)
         {
-            return await dbSet.FindAsync(code);
+            try
+            {
+                return await dbSet.FindAsync(code);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
 
         public async Task<T> GetByIntAsync(int code)
         {
-            return await dbSet.FindAsync(code);
+            try
+            {
+                return await dbSet.FindAsync(code);
+
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
 
         public async Task<T> FirstOrDefaultAsync(
             Expression<Func<T, bool>> filter = null,
             string includeProperties = null)
         {
-            IQueryable<T> query = dbSet;
-
-            if (filter != null)
-                query = query.Where(filter);
-
-            if (includeProperties != null)
+            try
             {
-                foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                IQueryable<T> query = dbSet;
+
+                if (filter != null)
+                    query = query.Where(filter);
+
+                if (includeProperties != null)
                 {
-                    query = query.Include(includeProp);
+                    foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
                 }
+                return await query.FirstOrDefaultAsync();
             }
-            return await query.FirstOrDefaultAsync();
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
 
@@ -52,84 +75,148 @@ namespace User_Management_System.PostgreSqlRepository
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             string includeProperties = null)
         {
-            IQueryable<T> query = dbSet;
-
-            if (filter != null) query = query.Where(filter);
-
-            if (includeProperties != null)
+            try
             {
-                foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProp);
-                }
-            }
-            if (orderBy != null) query = orderBy(query);
+                IQueryable<T> query = dbSet;
 
-            return await query.ToListAsync();
+                if (filter != null) query = query.Where(filter);
+
+                if (includeProperties != null)
+                {
+                    foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
+                }
+                if (orderBy != null) query = orderBy(query);
+
+                return await query.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task AddAsync(T entity)
         {
-            await dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await dbSet.AddAsync(entity);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
 
         }
 
         public async Task UpdateAsync(string entityCode, Func<T, Task> updateAction)
         {
-            _context.ChangeTracker.Clear();
-            var entity = await GetAsync(entityCode);
-
-            if (entity != null)
+            try
             {
-                await updateAction(entity);
-                _context.Entry(entity).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                _context.ChangeTracker.Clear();
+                var entity = await GetAsync(entityCode);
 
+                if (entity != null)
+                {
+                    await updateAction(entity);
+                    _context.Entry(entity).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task UpdateByIntAsync(int entityCode, Func<T, Task> updateAction)
         {
-            _context.ChangeTracker.Clear();
-            var entity = await GetByIntAsync(entityCode);
-
-            if (entity != null)
+            try
             {
-                await updateAction(entity);
-                _context.Entry(entity).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                _context.ChangeTracker.Clear();
+                var entity = await GetByIntAsync(entityCode);
+
+                if (entity != null)
+                {
+                    await updateAction(entity);
+                    _context.Entry(entity).State = EntityState.Modified;
+                    await _context.SaveChangesAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task RemoveAsync(T entity)
         {
-            dbSet.Remove(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task RemoveAsync(string code)
         {
-            var entity = await GetAsync(code);
-            if (entity != null)
+            try
             {
-                await RemoveAsync(entity);
-                await _context.SaveChangesAsync();
+                var entity = await GetAsync(code);
+                if (entity != null)
+                {
+                    await RemoveAsync(entity);
+                    await _context.SaveChangesAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
         public async Task RemoveByIntAsync(int code)
         {
-            var entity = await GetByIntAsync(code);
-            if (entity != null)
+            try
             {
-                await RemoveAsync(entity);
-                await _context.SaveChangesAsync();
+                var entity = await GetByIntAsync(code);
+                if (entity != null)
+                {
+                    await RemoveAsync(entity);
+                    await _context.SaveChangesAsync();
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
         public async Task RemoveRangeAsync(IEnumerable<T> values)
         {
-            dbSet.RemoveRange(values);
-            await _context.SaveChangesAsync();
+            try
+            {
+                dbSet.RemoveRange(values);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
     }

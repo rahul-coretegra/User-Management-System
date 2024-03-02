@@ -18,5 +18,8 @@ namespace User_Management_System.ManagementModels
         [Required]
         public TypeOfService ServiceType { get; set; }
 
+        [Required]
+        public TrueFalse Status { get; set; }
+
     }
 }

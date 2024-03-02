@@ -28,6 +28,7 @@
         ElasticMailSms,
         ErrorHandler,
         NexmoSms,
+        OutLookEmail,
         PostMarkEmail,
         TwilioSendGridEmail,
         TwilioSms

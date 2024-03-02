@@ -37,9 +37,9 @@ namespace User_Management_System.MongoDbModels
 
         public TrueFalse IsVerifiedPhoneNumber { get; set; }
 
-        public string Token { get; set; }
-
         public TrueFalse IsActiveUser { get; set; }
+
+        public string Token { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 

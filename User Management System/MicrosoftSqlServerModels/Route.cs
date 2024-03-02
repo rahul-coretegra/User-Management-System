@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using User_Management_System.ManagementModels.EnumModels;
 
 namespace User_Management_System.MicrosoftSqlServerModels
 {
@@ -16,5 +17,8 @@ namespace User_Management_System.MicrosoftSqlServerModels
 
         [Required]
         public string RouteName { get; set; }
+
+        [Required]
+        public TrueFalse Status { get; set; }
     }
 }

@@ -4,13 +4,12 @@ using User_Management_System.PostgreSqlRepository.IPsqlRepository;
 
 namespace User_Management_System.PostgreSqlRepository
 {
-    public class ConfigureServiceRepository:Repository<ConfigureService>, IConfigureServiceRepository
+    public class ConfigureServiceRepository : Repository<ConfigureService>, IConfigureServiceRepository
     {
         private readonly PostgreSqlApplicationDbContext _context;
-
-        public ConfigureServiceRepository(PostgreSqlApplicationDbContext options) : base(options)
+        public ConfigureServiceRepository(PostgreSqlApplicationDbContext context) : base(context)
         {
-            _context = options;
+            _context = context;
         }
     }
 }

@@ -33,38 +33,14 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
-                    b.Property<string>("ServiceName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("ServiceType")
+                    b.Property<int>("IsConfigured")
                         .HasColumnType("integer");
-
-                    b.Property<string>("ServiceUniqueId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("UniqueId");
-
-                    b.ToTable("ConfigureServices");
-                });
-
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Item", b =>
-                {
-                    b.Property<string>("ItemId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConfigureServiceUniqueId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
                     b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("ItemUniqueId")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -72,11 +48,15 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.HasKey("ItemId");
+                    b.Property<string>("ServiceId")
+                        .IsRequired()
+                        .HasColumnType("text");
 
-                    b.HasIndex("ConfigureServiceUniqueId");
+                    b.HasKey("UniqueId");
 
-                    b.ToTable("Items");
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("ConfigureServices");
                 });
 
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.Menu", b =>
@@ -112,38 +92,7 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.ToTable("Menus");
                 });
 
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAndAccess", b =>
-                {
-                    b.Property<string>("UniqueId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<int>("IsAccess")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("RouteId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("UniqueId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("RouteId");
-
-                    b.ToTable("RoleAndAccess");
-                });
-
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAndMenus", b =>
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.MenuAccess", b =>
                 {
                     b.Property<string>("UniqueId")
                         .HasColumnType("text");
@@ -171,7 +120,38 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RoleAndMenus");
+                    b.ToTable("MenuAccess");
+                });
+
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAccess", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("AccessToRole")
+                        .HasColumnType("integer");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UniqueId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("RoleAccess");
                 });
 
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.Route", b =>
@@ -193,9 +173,73 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                         .IsRequired()
                         .HasColumnType("text");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.HasKey("RouteId");
 
                     b.ToTable("Routes");
+                });
+
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RouteAccess", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("IsAccess")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<string>("RouteId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.HasKey("UniqueId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("RouteAccess");
+                });
+
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Service", b =>
+                {
+                    b.Property<string>("ServiceId")
+                        .HasColumnType("text");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("ServiceType")
+                        .HasColumnType("integer");
+
+                    b.Property<string>("ServiceUniqueId")
+                        .IsRequired()
+                        .HasColumnType("text");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
+                    b.HasKey("ServiceId");
+
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.User", b =>
@@ -254,37 +298,6 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.UserAndRoles", b =>
-                {
-                    b.Property<string>("UniqueId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("AccessToRole")
-                        .HasColumnType("integer");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("UniqueId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserAndUserRoles");
-                });
-
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.UserRole", b =>
                 {
                     b.Property<string>("RoleId")
@@ -304,40 +317,26 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("integer");
+
                     b.HasKey("RoleId");
 
                     b.ToTable("UserRoles");
                 });
 
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Item", b =>
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.ConfigureService", b =>
                 {
-                    b.HasOne("User_Management_System.PostgreSqlModels.ConfigureService", null)
-                        .WithMany("Items")
-                        .HasForeignKey("ConfigureServiceUniqueId")
+                    b.HasOne("User_Management_System.PostgreSqlModels.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAndAccess", b =>
-                {
-                    b.HasOne("User_Management_System.PostgreSqlModels.UserRole", "UserRole")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("User_Management_System.PostgreSqlModels.Route", "Route")
-                        .WithMany()
-                        .HasForeignKey("RouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Route");
-
-                    b.Navigation("UserRole");
-                });
-
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAndMenus", b =>
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.MenuAccess", b =>
                 {
                     b.HasOne("User_Management_System.PostgreSqlModels.Menu", "Menu")
                         .WithMany()
@@ -356,7 +355,7 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.UserAndRoles", b =>
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RoleAccess", b =>
                 {
                     b.HasOne("User_Management_System.PostgreSqlModels.UserRole", "UserRole")
                         .WithMany()
@@ -375,9 +374,23 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.ConfigureService", b =>
+            modelBuilder.Entity("User_Management_System.PostgreSqlModels.RouteAccess", b =>
                 {
-                    b.Navigation("Items");
+                    b.HasOne("User_Management_System.PostgreSqlModels.UserRole", "UserRole")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User_Management_System.PostgreSqlModels.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Route");
+
+                    b.Navigation("UserRole");
                 });
 #pragma warning restore 612, 618
         }

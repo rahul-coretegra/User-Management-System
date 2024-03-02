@@ -9,17 +9,18 @@ namespace User_Management_System.PostgreSqlRepository.IPsqlRepository
 
         IRouteRepository Routes { get; }
 
-        IUserAndRolesRepository UserAndRoles { get; }
+        IRoleAccessRepository RoleAccess { get; }
 
-        IRoleAndAccessRepository RoleAndAccess { get; }
+        IRouteAccessRepository RouteAccess { get; }
 
         IMenuRepository Menus{ get; } 
 
-        IRoleAndMenusRepository RoleAndMenus { get; }
+        IMenuAccessRepository MenuAccess { get; }
 
-        IItemRepository Items { get; }
+        IServiceRepository Services { get; }
 
         IConfigureServiceRepository ConfigureServices { get; }
+
 
     }
 }

@@ -20,8 +20,9 @@ namespace User_Management_System.PostgreSqlModels
 
         public string MenuIcon { get; set; }
 
-        public TrueFalse Status { get; set; }
-
         public string ParentId { get; set; }
+
+        [Required]
+        public TrueFalse Status { get; set; }
     }
 }
