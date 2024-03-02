@@ -40,7 +40,7 @@ builder.Services.Configure<MongoDbSettings>(builder.Configuration.GetSection("Mo
 builder.Services.AddSingleton<MongoDbApplicationDbContext>();
 
 
-builder.Services.AddScoped<IDbContextConfigurations, DbContextConfigurations>();
+builder.Services.AddScoped<IDbContextConfigurations, DatabaseConfigurations>();
 
 builder.Services.AddScoped<IManagementWork, ManagementWork>();
 

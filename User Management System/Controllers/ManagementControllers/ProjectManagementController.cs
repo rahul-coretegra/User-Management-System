@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User_Management_System.ManagementModels;
+using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.ManagementRepository.IManagementRepository;
 using User_Management_System.SD;
 
@@ -29,9 +30,9 @@ namespace User_Management_System.Controllers.ManagementControllers
                     return NotFound(new { message = "NotFound" });
                 return Ok(projectInDB);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -43,20 +44,21 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var list = await _management.Projects.GetAllAsync();
                 return Ok(list);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
         }
 
         [HttpPost(SDRoutes.Create)]
         public async Task<IActionResult> CreateProject([FromBody] Project Project)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
                     Project.ProjectUniqueId = _management.UniqueId();
+                    Project.Status = TrueFalse.True;
                     var result = _dbContextConfigurations.establishDbConnection(Project);
 
                     if (result == true)
@@ -69,21 +71,22 @@ namespace User_Management_System.Controllers.ManagementControllers
                         return BadRequest(new { message = "sorry" });
                     }
                 }
-                catch (Exception)
-                {
-                    return StatusCode(500, new { message = "Database Error" });
-                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
             }
-            else
-                return BadRequest(new { message = "BadRequest" });
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         [HttpPut(SDRoutes.Update)]
         public async Task<IActionResult> UpdateProjects([FromBody] Project Project)
         {
-            if (ModelState.IsValid)
+
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
                     var indb = await _management.Projects.GetAsync(Project.ProjectUniqueId);
                     if (indb == null)
@@ -99,17 +102,18 @@ namespace User_Management_System.Controllers.ManagementControllers
                         entity.ProjectName = Project.ProjectName;
                         entity.ProjectDescription = Project.ProjectDescription;
                         entity.OwnerName = Project.OwnerName;
+                        entity.Status = Project.Status;
                         await Task.CompletedTask;
                     });
                     return Ok(new { message = "Updated" });
                 }
-                catch (Exception)
-                {
-                    return StatusCode(500, new { message = "Database Error" });
-                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
             }
-            else
-                return BadRequest(new { message = "BadRequest" });
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
 
     }

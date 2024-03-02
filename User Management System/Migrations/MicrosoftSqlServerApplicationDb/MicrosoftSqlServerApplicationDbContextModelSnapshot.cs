@@ -33,38 +33,14 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
-                    b.Property<string>("ServiceName")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<int>("ServiceType")
+                    b.Property<int>("IsConfigured")
                         .HasColumnType("int");
-
-                    b.Property<string>("ServiceUniqueId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("UniqueId");
-
-                    b.ToTable("ConfigureServices");
-                });
-
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Item", b =>
-                {
-                    b.Property<string>("ItemId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("ConfigureServiceUniqueId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
                     b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("ItemUniqueId")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
@@ -72,11 +48,15 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
-                    b.HasKey("ItemId");
+                    b.Property<string>("ServiceId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
 
-                    b.HasIndex("ConfigureServiceUniqueId");
+                    b.HasKey("UniqueId");
 
-                    b.ToTable("Items");
+                    b.HasIndex("ServiceId");
+
+                    b.ToTable("ConfigureServices");
                 });
 
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Menu", b =>
@@ -112,38 +92,7 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.ToTable("Menus");
                 });
 
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndAccess", b =>
-                {
-                    b.Property<string>("UniqueId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<int>("IsAccess")
-                        .HasColumnType("int");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("RouteId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UniqueId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("RouteId");
-
-                    b.ToTable("RoleAndAccess");
-                });
-
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndMenus", b =>
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.MenuAccess", b =>
                 {
                     b.Property<string>("UniqueId")
                         .HasColumnType("nvarchar(450)");
@@ -171,7 +120,38 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 
                     b.HasIndex("RoleId");
 
-                    b.ToTable("RoleAndMenus");
+                    b.ToTable("MenuAccess");
+                });
+
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAccess", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("AccessToRole")
+                        .HasColumnType("int");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("UserId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UniqueId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("UserId");
+
+                    b.ToTable("UserAndUserRoles");
                 });
 
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Route", b =>
@@ -193,9 +173,73 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("RouteId");
 
                     b.ToTable("Route");
+                });
+
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RouteAccess", b =>
+                {
+                    b.Property<string>("UniqueId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<int>("IsAccess")
+                        .HasColumnType("int");
+
+                    b.Property<string>("RoleId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<string>("RouteId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(450)");
+
+                    b.HasKey("UniqueId");
+
+                    b.HasIndex("RoleId");
+
+                    b.HasIndex("RouteId");
+
+                    b.ToTable("RouteAccess");
+                });
+
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Service", b =>
+                {
+                    b.Property<string>("ServiceId")
+                        .HasColumnType("nvarchar(450)");
+
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("ServiceName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("ServiceType")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ServiceUniqueId")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
+                    b.HasKey("ServiceId");
+
+                    b.ToTable("Services");
                 });
 
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.User", b =>
@@ -254,37 +298,6 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.ToTable("Users");
                 });
 
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.UserAndRoles", b =>
-                {
-                    b.Property<string>("UniqueId")
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<int>("AccessToRole")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(450)");
-
-                    b.HasKey("UniqueId");
-
-                    b.HasIndex("RoleId");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("UserAndUserRoles");
-                });
-
             modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.UserRole", b =>
                 {
                     b.Property<string>("RoleId")
@@ -303,6 +316,9 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("RoleId");
 
@@ -328,40 +344,26 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
+
                     b.HasKey("RouteId");
 
                     b.ToTable("Routes");
                 });
 
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.Item", b =>
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.ConfigureService", b =>
                 {
-                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.ConfigureService", null)
-                        .WithMany("Items")
-                        .HasForeignKey("ConfigureServiceUniqueId")
+                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.Service", "Service")
+                        .WithMany()
+                        .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
+
+                    b.Navigation("Service");
                 });
 
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndAccess", b =>
-                {
-                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.UserRole", "UserRole")
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.Route", "Route")
-                        .WithMany()
-                        .HasForeignKey("RouteId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("Route");
-
-                    b.Navigation("UserRole");
-                });
-
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAndMenus", b =>
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.MenuAccess", b =>
                 {
                     b.HasOne("User_Management_System.MicrosoftSqlServerModels.Menu", "Menu")
                         .WithMany()
@@ -380,7 +382,7 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.UserAndRoles", b =>
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RoleAccess", b =>
                 {
                     b.HasOne("User_Management_System.MicrosoftSqlServerModels.UserRole", "UserRole")
                         .WithMany()
@@ -399,9 +401,23 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                     b.Navigation("UserRole");
                 });
 
-            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.ConfigureService", b =>
+            modelBuilder.Entity("User_Management_System.MicrosoftSqlServerModels.RouteAccess", b =>
                 {
-                    b.Navigation("Items");
+                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.UserRole", "UserRole")
+                        .WithMany()
+                        .HasForeignKey("RoleId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("User_Management_System.MicrosoftSqlServerModels.Route", "Route")
+                        .WithMany()
+                        .HasForeignKey("RouteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("Route");
+
+                    b.Navigation("UserRole");
                 });
 #pragma warning restore 612, 618
         }

@@ -36,13 +36,15 @@ namespace User_Management_System.MicrosoftSqlServerModels
 
         public TrueFalse IsVerifiedPhoneNumber { get; set; }
 
-        public string Token { get; set; }
-
         public TrueFalse IsActiveUser { get; set; }
+
+        public string Token { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
         public DateTime? UpdatedAt { get; set; }
+
+       
 
     }
 }

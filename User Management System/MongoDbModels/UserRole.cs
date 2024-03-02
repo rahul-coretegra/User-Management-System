@@ -20,5 +20,8 @@ namespace User_Management_System.MongoDbModels
 
         [BsonRequired]
         public RoleLevels RoleLevel { get; set; }
+
+        [BsonRequired]
+        public TrueFalse Status { get; set; }
     }
 }

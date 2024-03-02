@@ -20,8 +20,10 @@ namespace User_Management_System.MicrosoftSqlServerModels
 
         public string MenuIcon { get; set; }
 
+        public string ParentId { get; set; }
+
+        [Required]
         public TrueFalse Status { get; set; }
 
-        public string ParentId { get; set; }
     }
 }

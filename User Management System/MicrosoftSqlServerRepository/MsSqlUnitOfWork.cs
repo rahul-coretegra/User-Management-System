@@ -17,13 +17,12 @@ namespace User_Management_System.MicrosoftSqlServerRepository
             UserRoles = new UserRoleRepository(_context);
             Users = new UserRepository(_context, _appsettings);
             Routes = new RouteRepository(_context);
-            UserAndRoles = new UserAndRolesRepository(_context);
-            RoleAndAccess = new RoleAndAccessRepository(_context);
+            RoleAccess = new RoleAccessRepository(_context);
+            RouteAccess = new RouteAccessRepository(_context);
             Menus = new MenuRepository(_context);
-            RoleAndMenus = new RoleAndMenusRepository(_context);
-            Items = new ItemRepository(_context);
+            MenuAccess = new MenuAccessRepository(_context);
+            Services = new ServiceRepository(_context);
             ConfigureServices = new ConfigureServiceRepository(_context);
-
 
         }
         public IUserRoleRepository UserRoles { private set; get; }
@@ -32,17 +31,18 @@ namespace User_Management_System.MicrosoftSqlServerRepository
 
         public IRouteRepository Routes { private set; get; }
 
-        public IUserAndRolesRepository UserAndRoles { private set; get; }
+        public IRoleAccessRepository RoleAccess { private set; get; }
 
-        public IRoleAndAccessRepository RoleAndAccess { private set; get; }
+        public IRouteAccessRepository RouteAccess { private set; get; }
 
         public IMenuRepository Menus { private set; get; }
 
-        public IRoleAndMenusRepository RoleAndMenus { private set; get; }
+        public IMenuAccessRepository MenuAccess { private set; get; }
 
-        public IItemRepository Items { private set; get; }
+        public IServiceRepository Services { private set; get; }
 
         public IConfigureServiceRepository ConfigureServices { private set; get; }
+
 
     }
 }

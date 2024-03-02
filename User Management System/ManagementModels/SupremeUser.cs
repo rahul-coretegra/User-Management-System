@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
+using User_Management_System.ManagementModels.EnumModels;
 
 namespace User_Management_System.ManagementModels
 {
@@ -23,11 +24,15 @@ namespace User_Management_System.ManagementModels
         [Required]
         public string Password { get; set; }
 
+        public bool SupremeAccess { get; set; }
+
         public string Token { get; set; }
 
         public DateTime? CreatedAt { get; set; }
 
-        public bool SupremeAccess { get; set; }
+        [Required]
+        public TrueFalse Status { get; set; }
+
 
     }
 }

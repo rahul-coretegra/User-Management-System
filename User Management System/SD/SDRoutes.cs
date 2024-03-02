@@ -4,66 +4,73 @@
     {
         public const string baseUrl = "api";
 
+        public const string Management = baseUrl + "/management";
+
+        public const string ProjectManagement = Management + "/project";
+
+        public const string SupremeUserManagement = Management + "/supremeuser";
+
+        public const string ConfigureServiceManagement = Management + "/configureservice";
+
+        public const string ItemManagement = Management + "/item";
+
+        public const string ServiceManagement = Management + "/service";
+
+
+
+        public const string Project = baseUrl + "/project";
+
+        public const string UserRole = Project + "/userrole";
+
+        public const string Route = Project + "/route";
+
+        public const string RouteAccess = Project + "/routeaccess";
+
+        public const string Menu = Project + "/menu";
+
+        public const string MenuAccess = Project + "/menuaccess";
+
+        public const string Item = Project + "/item";
+
+        public const string Service = Project + "/service";
+
+        public const string ConfigureService = Project + "/configureservice";
+
+        public const string User = baseUrl + "/user";
+
         public const string GetAll = "getall";
 
         public const string Get = "get";
 
-        public const string Create = "create";
 
-        public const string Update = "update";
 
-        public const string Delete = "delete";
+        public const string MenusWithSubMenus = Get + "menuswithsubmenus";
 
-        public const string Upsert = "upsert";
-
-        public const string GetBy = "getby";
-
-        public const string GetByRoleId = GetBy +"roleid";
-
-        public const string GetByParentId = GetBy + "parentid";
 
         public const string Authenticate = "authenticate";
 
         public const string Register = "register";
 
+        public const string Create = "create";
+
+
+        public const string Update = "update";
+
+        public const string Upsert = "upsert";
+
         public const string UpSertRoleAccess = Upsert + "roleaccess";
 
-        public const string UpSertUserAccess = Upsert + "useraccess";
+        public const string UpSertMenuAccess = Upsert + "menuaccess";
 
-
-
-        public const string UserManagement = baseUrl + "/user";
+        public const string UpSertRouteAccess = Upsert + "routeaccess";
 
         public const string ActivateDeactivateUser = "activatedeactivateuser";
 
-
-        public const string UserRoleManagement = baseUrl + "/userrole";
-
-        public const string RouteManagement = baseUrl + "/route";
-
-        public const string RoleAndAccessManagement = baseUrl + "/roleandaccess";
-
-
-
-        public const string MenuManagement = baseUrl + "/menu";
-
-        public const string MenusWithSubMenus = Get + "menuswithsubmenus";
-
-        public const string RoleAndMenusManagement = baseUrl + "/roleandmenus";
-
-        public const string ServiceConfigurationManagement = baseUrl + "/serviceconfiguration";
+        public const string Delete = "delete";
 
 
 
 
-
-        public const string ProjectManagement = baseUrl + "/project";
-
-        public const string SupremeUserManagement = baseUrl + "/supremeuser";
-
-        public const string ItemManagement = baseUrl + "/item";
-
-        public const string ServiceManagement = baseUrl + "/service";
 
 
 

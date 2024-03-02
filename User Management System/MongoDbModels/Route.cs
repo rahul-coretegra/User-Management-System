@@ -1,6 +1,7 @@
 ﻿using MongoDB.Bson.Serialization.Attributes;
 using MongoDB.Bson;
 using System.ComponentModel.DataAnnotations;
+using User_Management_System.ManagementModels.EnumModels;
 
 namespace User_Management_System.MongoDbModels
 {
@@ -12,10 +13,15 @@ namespace User_Management_System.MongoDbModels
 
         public string RouteId { get; set; }
 
-        [Required]
+        [BsonRequired]
         public string RoutePath { get; set; }
 
-        [Required]
+        [BsonRequired]
         public string RouteName { get; set; }
+
+        [BsonRequired]
+        public TrueFalse Status { get; set; }
+
+
     }
 }

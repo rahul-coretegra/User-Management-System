@@ -22,35 +22,75 @@ namespace User_Management_System.MongoDbRepository
 
         public async Task AddAsync(T entity)
         {
-            await _collection.InsertOneAsync(entity);
+            try
+            {
+                await _collection.InsertOneAsync(entity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task<T> FirstOrDefaultAsync(Expression<Func<T, bool>> filter = null)
         {
-            return await _collection.Find(filter).FirstOrDefaultAsync();
+            try
+            {
+                return await _collection.Find(filter).FirstOrDefaultAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task<IEnumerable<T>> GetAllAsync(Expression<Func<T, bool>> filter = null)
         {
-            if (filter == null)
-                return await _collection.Find(_ => true).ToListAsync();
-            else
-                return await _collection.Find(filter).ToListAsync();
+            try
+            {
+                if (filter == null)
+                    return await _collection.Find(_ => true).ToListAsync();
+                else
+                    return await _collection.Find(filter).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task RemoveAsync(Expression<Func<T, bool>> filter = null)
         {
-            await _collection.DeleteOneAsync(filter);
+            try
+            {
+                await _collection.DeleteOneAsync(filter);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task UpdateAsync(Expression<Func<T, bool>> filter, Func<T, Task> updateAction)
         {
-            var entityToUpdate = await _collection.Find(filter).FirstOrDefaultAsync();
-            if (entityToUpdate != null)
+            try
             {
-                await updateAction(entityToUpdate);
-                await _collection.ReplaceOneAsync(filter, entityToUpdate);
+                var entityToUpdate = await _collection.Find(filter).FirstOrDefaultAsync();
+                if (entityToUpdate != null)
+                {
+                    await updateAction(entityToUpdate);
+                    await _collection.ReplaceOneAsync(filter, entityToUpdate);
+                }
             }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
     }
 }

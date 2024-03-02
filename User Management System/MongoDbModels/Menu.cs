@@ -22,8 +22,10 @@ namespace User_Management_System.MongoDbModels
 
         public string MenuIcon { get; set; }
 
+        public string ParentId { get; set; }
+
+        [BsonRequired]
         public TrueFalse Status { get; set; }
 
-        public string ParentId { get; set; }
     }
 }

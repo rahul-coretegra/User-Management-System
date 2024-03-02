@@ -18,25 +18,41 @@ namespace User_Management_System.ManagementRepository
         }
         public async Task<T> GetAsync(string code)
         {
-            return await dbSet.FindAsync(code);
+            try
+            {
+                return await dbSet.FindAsync(code);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
         }
+
         public async Task<T> FirstOrDefaultAsync(
             Expression<Func<T, bool>> filter = null,
             string includeProperties = null)
         {
-            IQueryable<T> query = dbSet;
-
-            if (filter != null)
-                query = query.Where(filter);
-
-            if (includeProperties != null)
+            try
             {
-                foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                IQueryable<T> query = dbSet;
+
+                if (filter != null)
+                    query = query.Where(filter);
+
+                if (includeProperties != null)
                 {
-                    query = query.Include(includeProp);
+                    foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
                 }
+                return await query.FirstOrDefaultAsync();
             }
-            return await query.FirstOrDefaultAsync();
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
 
@@ -45,26 +61,42 @@ namespace User_Management_System.ManagementRepository
             Func<IQueryable<T>, IOrderedQueryable<T>> orderBy = null,
             string includeProperties = null)
         {
-            IQueryable<T> query = dbSet;
-
-            if (filter != null) query = query.Where(filter);
-
-            if (includeProperties != null)
+            try
             {
-                foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
-                {
-                    query = query.Include(includeProp);
-                }
-            }
-            if (orderBy != null) query = orderBy(query);
+                IQueryable<T> query = dbSet;
 
-            return await query.ToListAsync();
+                if (filter != null) query = query.Where(filter);
+
+                if (includeProperties != null)
+                {
+                    foreach (var includeProp in includeProperties.Split(new[] { ',' }, StringSplitOptions.RemoveEmptyEntries))
+                    {
+                        query = query.Include(includeProp);
+                    }
+                }
+                if (orderBy != null) query = orderBy(query);
+
+                return await query.ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task AddAsync(T entity)
         {
-            await dbSet.AddAsync(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                await dbSet.AddAsync(entity);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
 
         }
 
@@ -84,15 +116,31 @@ namespace User_Management_System.ManagementRepository
 
         public async Task RemoveAsync(string code)
         {
-            var entity = await GetAsync(code);
-            if (entity != null)
-                await Remove(entity);
+            try
+            {
+                var entity = await GetAsync(code);
+                if (entity != null)
+                    await Remove(entity);
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
 
         public async Task Remove(T entity)
         {
-            dbSet.Remove(entity);
-            await _context.SaveChangesAsync();
+            try
+            {
+                dbSet.Remove(entity);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.ToString());
+            }
+
         }
     }
 }

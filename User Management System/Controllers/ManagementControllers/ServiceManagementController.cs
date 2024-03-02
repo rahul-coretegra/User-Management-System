@@ -1,9 +1,7 @@
-﻿using Amazon.Auth.AccessControlPolicy;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User_Management_System.ManagementModels;
-using User_Management_System.ManagementRepository;
+using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.ManagementRepository.IManagementRepository;
 using User_Management_System.SD;
 
@@ -30,9 +28,9 @@ namespace User_Management_System.Controllers.ManagementControllers
                     return NotFound(new { message = "NotFound" });
                 return Ok(serviceInDB);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -44,18 +42,18 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var list = await _management.Services.GetAllAsync();
                 return Ok(list);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
         }
 
         [HttpPost(SDRoutes.Create)]
         public async Task<IActionResult> CreateService([FromBody] Service Service)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
                     var indb = await _management.Services.FirstOrDefaultAsync(d => d.ServiceName == Service.ServiceName && d.ServiceType == Service.ServiceType);
                     if (indb != null)
@@ -63,25 +61,27 @@ namespace User_Management_System.Controllers.ManagementControllers
                     else
                     {
                         Service.ServiceUniqueId = _management.UniqueId();
+                        Service.Status = TrueFalse.True;
                         await _management.Services.AddAsync(Service);
+
                         return Ok(new { message = "Created" });
-                    }              
+                    }
                 }
-                catch (Exception)
-                {
-                    return StatusCode(500, new { message = "Database Error" });
-                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
             }
-            else
-                return BadRequest(new { message = "BadRequest" });
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         [HttpPut(SDRoutes.Update)]
         public async Task<IActionResult> UpdateService([FromBody] Service Service)
         {
-            if (ModelState.IsValid)
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
                     var indb = await _management.Services.GetAsync(Service.ServiceUniqueId);
                     if (indb == null)
@@ -96,36 +96,37 @@ namespace User_Management_System.Controllers.ManagementControllers
                     {
                         entity.ServiceName = Service.ServiceName;
                         entity.ServiceType = Service.ServiceType;
+                        entity.Status = Service.Status;
                         await Task.CompletedTask;
                     });
                     return Ok(new { message = "Updated" });
                 }
-                catch (Exception)
-                {
-                    return StatusCode(500, new { message = "Database Error" });
-                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
             }
-            else
-                return BadRequest(new { message = "BadRequest" });
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
 
-        [HttpGet(SDRoutes.Delete)]
-        public async Task<IActionResult> DeleteService(string ServiceUniqueId)
-        {
-            try
-            {
-                var serviceInDB = await _management.Services.FirstOrDefaultAsync(filter: d => d.ServiceUniqueId == ServiceUniqueId);
-                if (serviceInDB == null)
-                    return NotFound(new { message = "NotFound" });
-                else
-                    await _management.Services.RemoveAsync(ServiceUniqueId);
-                return Ok(new { message = "Deleted" });
-            }
-            catch (Exception)
-            {
-                return StatusCode(500, new { message = "Database Error" });
-            }
-        }
+        //[HttpGet(SDRoutes.Delete)]
+        //public async Task<IActionResult> DeleteService(string ServiceUniqueId)
+        //{
+        //    try
+        //    {
+        //        var serviceInDB = await _management.Services.FirstOrDefaultAsync(filter: d => d.ServiceUniqueId == ServiceUniqueId);
+        //        if (serviceInDB == null)
+        //            return NotFound(new { message = "NotFound" });
+        //        else
+        //            await _management.Services.RemoveAsync(ServiceUniqueId);
+        //        return Ok(new { message = "Deleted" });
+        //    }
+        //    catch (Exception ex)
+        //    {
+        //        throw new Exception(ex.Message, ex);
+        //    }
+        //}
 
     }
 }

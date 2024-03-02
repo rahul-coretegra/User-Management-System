@@ -12,57 +12,60 @@ namespace User_Management_System.PostgreSqlConfigurations
 
         public DbSet<User> Users { get; set; }
 
-        public DbSet<UserAndRoles> UserAndUserRoles { get; set; }
+        public DbSet<RoleAccess> RoleAccess { get; set; }
 
         public DbSet<PostgreSqlModels.Route> Routes { get; set; }
 
-        public DbSet<RoleAndAccess> RoleAndAccess { get; set; }
-        
+        public DbSet<RouteAccess> RouteAccess { get; set; }
+
         public DbSet<Menu> Menus { get; set; }
 
-        public DbSet<RoleAndMenus> RoleAndMenus { get; set; }
+        public DbSet<MenuAccess> MenuAccess { get; set; }
 
-        public DbSet<Item> Items { get; set; }
+        public DbSet<Service> Services { get; set; }
 
         public DbSet<ConfigureService> ConfigureServices { get; set; }
+
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
 
-            modelBuilder.Entity<UserAndRoles>()
+            modelBuilder.Entity<RoleAccess>()
                 .HasOne(ura => ura.User)
                 .WithMany()
                 .HasForeignKey(ura => ura.UserId);
 
-            modelBuilder.Entity<UserAndRoles>()
+            modelBuilder.Entity<RoleAccess>()
                 .HasOne(ura => ura.UserRole)
                 .WithMany()
                 .HasForeignKey(ura => ura.RoleId);
 
-            modelBuilder.Entity<RoleAndAccess>()
+            modelBuilder.Entity<RouteAccess>()
                 .HasOne(ura => ura.UserRole)
                 .WithMany()
                 .HasForeignKey(ura => ura.RoleId);
 
-            modelBuilder.Entity<RoleAndAccess>()
+            modelBuilder.Entity<RouteAccess>()
                 .HasOne(ura => ura.Route)
                 .WithMany()
                 .HasForeignKey(ura => ura.RouteId);
 
-            modelBuilder.Entity<RoleAndMenus>()
+            modelBuilder.Entity<MenuAccess>()
                 .HasOne(ura => ura.UserRole)
                 .WithMany()
                 .HasForeignKey(ura => ura.RoleId);
 
-            modelBuilder.Entity<RoleAndMenus>()
+            modelBuilder.Entity<MenuAccess>()
                 .HasOne(ura => ura.Menu)
                 .WithMany()
                 .HasForeignKey(ura => ura.MenuId);
 
             modelBuilder.Entity<ConfigureService>()
-                .HasMany(c => c.Items)
-                .WithOne()
-                .IsRequired();
+                .HasOne(ura => ura.Service)
+                .WithMany()
+                .HasForeignKey(ura => ura.ServiceId);
+
+
         }
     }
 }

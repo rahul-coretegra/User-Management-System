@@ -1,6 +1,7 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using User_Management_System.ManagementModels;
+using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.ManagementModels.VMs;
 using User_Management_System.ManagementRepository.IManagementRepository;
 using User_Management_System.SD;
@@ -26,9 +27,9 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var user = await _management.SupremeUsers.FirstOrDefaultAsync(x => x.UserUniqueId == UserUniqueId);
                 return Ok(user);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
         }
 
@@ -41,19 +42,21 @@ namespace User_Management_System.Controllers.ManagementControllers
                 var users = await _management.SupremeUsers.GetAllAsync();
                 return Ok(users);
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
+
         }
 
         [HttpPost(SDRoutes.Register)]
         [Authorize(Policy = SDPolicies.SupremeAccess)]
         public async Task<IActionResult> RegisterSupremeUser([FromBody] SupremeUser SupremeUser)
         {
-            if (ModelState.IsValid)
+
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
                     var indb = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.PhoneNumber == SupremeUser.PhoneNumber || d.Email == SupremeUser.Email);
                     if (indb != null)
@@ -68,19 +71,20 @@ namespace User_Management_System.Controllers.ManagementControllers
                             PhoneNumber = SupremeUser.PhoneNumber,
                             Password = SupremeUser.Password,
                             CreatedAt = DateTime.UtcNow,
-                            SupremeAccess = true
+                            SupremeAccess = SupremeUser.SupremeAccess,
+                            Status = SupremeUser.Status,
                         };
                         await _management.SupremeUsers.AddAsync(user);
                         return Ok(new { message = "Created" });
                     }
                 }
-                catch (Exception)
-                {
-                    return StatusCode(500, new { message = "Database Error" });
-                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
             }
-            else
-                return BadRequest(new { message = "BadRequest" });
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
 
         [HttpPost(SDRoutes.Authenticate)]
@@ -98,7 +102,7 @@ namespace User_Management_System.Controllers.ManagementControllers
                 else if (userindb.Password != SupremeUser.Password)
                     return BadRequest(new { message = "Wrong Password" });
 
-                else if (userindb.SupremeAccess != true)
+                else if (userindb.Status != TrueFalse.True)
                     return BadRequest(new { message = "User Not Active." });
                 else
                 {
@@ -106,20 +110,20 @@ namespace User_Management_System.Controllers.ManagementControllers
                     return Ok(new { token = tokenindb });
                 }
             }
-            catch (Exception)
+            catch (Exception ex)
             {
-                return StatusCode(500, new { message = "Database Error" });
+                throw new Exception(ex.Message, ex);
             }
         }
 
         [HttpPut(SDRoutes.Update)]
-
         [Authorize(Policy = SDPolicies.SupremeAccess)]
         public async Task<IActionResult> UpdateSupremeUser([FromBody] SupremeUser SupremeUser)
         {
-            if (ModelState.IsValid)
+
+            try
             {
-                try
+                if (ModelState.IsValid)
                 {
                     var indb = await _management.SupremeUsers.FirstOrDefaultAsync(d => d.UserUniqueId == SupremeUser.UserUniqueId);
                     if (indb == null)
@@ -138,18 +142,19 @@ namespace User_Management_System.Controllers.ManagementControllers
                         entity.PhoneNumber = SupremeUser.PhoneNumber;
                         entity.Password = SupremeUser.Password;
                         entity.SupremeAccess = SupremeUser.SupremeAccess;
+                        entity.Status = SupremeUser.Status;
                         await Task.CompletedTask;
                     });
                     return Ok(new { message = "Updated" });
 
                 }
-                catch (Exception)
-                {
-                    return StatusCode(500, new { message = "Database Error" });
-                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
             }
-            else
-                return BadRequest(new { message = "BadRequest" });
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
         }
 
     }
