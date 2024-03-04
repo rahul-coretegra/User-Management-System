@@ -12,8 +12,8 @@ using User_Management_System.ManagementConfigurations;
 namespace User_Management_System.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20240301095053_UpdDb")]
-    partial class UpdDb
+    [Migration("20240304100017_AddIntital")]
+    partial class AddIntital
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,7 +38,7 @@ namespace User_Management_System.Migrations
                     b.Property<int>("IsConfigured")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ItemUniqueId")
+                    b.Property<string>("ItemName")
                         .IsRequired()
                         .HasColumnType("text");
 
@@ -48,34 +48,9 @@ namespace User_Management_System.Migrations
 
                     b.HasKey("UniqueId");
 
-                    b.HasIndex("ItemUniqueId");
-
                     b.HasIndex("ServiceUniqueId");
 
                     b.ToTable("ConfigureServices");
-                });
-
-            modelBuilder.Entity("User_Management_System.ManagementModels.Item", b =>
-                {
-                    b.Property<string>("ItemUniqueId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("ItemId")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("ItemId"));
-
-                    b.Property<string>("ItemName")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ItemUniqueId");
-
-                    b.ToTable("Items");
                 });
 
             modelBuilder.Entity("User_Management_System.ManagementModels.Project", b =>
@@ -195,19 +170,11 @@ namespace User_Management_System.Migrations
 
             modelBuilder.Entity("User_Management_System.ManagementModels.ConfigureService", b =>
                 {
-                    b.HasOne("User_Management_System.ManagementModels.Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemUniqueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("User_Management_System.ManagementModels.Service", "Service")
                         .WithMany()
                         .HasForeignKey("ServiceUniqueId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Item");
 
                     b.Navigation("Service");
                 });

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 {
-    public partial class AddInitial : Migration
+    public partial class AddIntital : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -117,27 +117,27 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                 });
 
             migrationBuilder.CreateTable(
-                name: "Items",
+                name: "ConfigureServices",
                 columns: table => new
                 {
-                    ItemId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    UniqueId = table.Column<string>(type: "nvarchar(450)", nullable: false),
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
                     ItemUniqueId = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemName = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     ItemValue = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ServiceUniqueId = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ServiceId = table.Column<string>(type: "nvarchar(450)", nullable: true),
-                    Status = table.Column<int>(type: "int", nullable: false)
+                    ServiceId = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    IsConfigured = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_Items", x => x.ItemId);
+                    table.PrimaryKey("PK_ConfigureServices", x => x.UniqueId);
                     table.ForeignKey(
-                        name: "FK_Items_Services_ServiceId",
+                        name: "FK_ConfigureServices_Services_ServiceId",
                         column: x => x.ServiceId,
                         principalTable: "Services",
-                        principalColumn: "ServiceId");
+                        principalColumn: "ServiceId",
+                        onDelete: ReferentialAction.Cascade);
                 });
 
             migrationBuilder.CreateTable(
@@ -224,47 +224,9 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                         onDelete: ReferentialAction.Cascade);
                 });
 
-            migrationBuilder.CreateTable(
-                name: "ConfigureServices",
-                columns: table => new
-                {
-                    UniqueId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    ServiceUniqueId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    ItemUniqueId = table.Column<string>(type: "nvarchar(450)", nullable: false),
-                    IsConfigured = table.Column<int>(type: "int", nullable: false)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_ConfigureServices", x => x.UniqueId);
-                    table.ForeignKey(
-                        name: "FK_ConfigureServices_Items_ItemUniqueId",
-                        column: x => x.ItemUniqueId,
-                        principalTable: "Items",
-                        principalColumn: "ItemId",
-                        onDelete: ReferentialAction.Cascade);
-                    table.ForeignKey(
-                        name: "FK_ConfigureServices_Services_ServiceUniqueId",
-                        column: x => x.ServiceUniqueId,
-                        principalTable: "Services",
-                        principalColumn: "ServiceId",
-                        onDelete: ReferentialAction.Cascade);
-                });
-
             migrationBuilder.CreateIndex(
-                name: "IX_ConfigureServices_ItemUniqueId",
+                name: "IX_ConfigureServices_ServiceId",
                 table: "ConfigureServices",
-                column: "ItemUniqueId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_ConfigureServices_ServiceUniqueId",
-                table: "ConfigureServices",
-                column: "ServiceUniqueId");
-
-            migrationBuilder.CreateIndex(
-                name: "IX_Items_ServiceId",
-                table: "Items",
                 column: "ServiceId");
 
             migrationBuilder.CreateIndex(
@@ -316,7 +278,7 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
                 name: "UserAndUserRoles");
 
             migrationBuilder.DropTable(
-                name: "Items");
+                name: "Services");
 
             migrationBuilder.DropTable(
                 name: "Menus");
@@ -329,9 +291,6 @@ namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 
             migrationBuilder.DropTable(
                 name: "Users");
-
-            migrationBuilder.DropTable(
-                name: "Services");
         }
     }
 }
