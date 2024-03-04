@@ -12,8 +12,8 @@ using User_Management_System.PostgreSqlConfigurations;
 namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 {
     [DbContext(typeof(PostgreSqlApplicationDbContext))]
-    [Migration("20240301100341_Add-Initial")]
-    partial class AddInitial
+    [Migration("20240304102150_AddIntital")]
+    partial class AddIntital
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -38,34 +38,6 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                     b.Property<int>("IsConfigured")
                         .HasColumnType("integer");
 
-                    b.Property<string>("ItemUniqueId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.Property<string>("ServiceUniqueId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("UniqueId");
-
-                    b.HasIndex("ItemUniqueId");
-
-                    b.HasIndex("ServiceUniqueId");
-
-                    b.ToTable("ConfigureServices");
-                });
-
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Item", b =>
-                {
-                    b.Property<string>("ItemId")
-                        .HasColumnType("text");
-
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
                     b.Property<string>("ItemName")
                         .IsRequired()
                         .HasColumnType("text");
@@ -79,20 +51,14 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
                         .HasColumnType("text");
 
                     b.Property<string>("ServiceId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ServiceUniqueId")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
-                    b.HasKey("ItemId");
+                    b.HasKey("UniqueId");
 
                     b.HasIndex("ServiceId");
 
-                    b.ToTable("Items");
+                    b.ToTable("ConfigureServices");
                 });
 
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.Menu", b =>
@@ -363,28 +329,11 @@ namespace User_Management_System.Migrations.PostgreSqlApplicationDb
 
             modelBuilder.Entity("User_Management_System.PostgreSqlModels.ConfigureService", b =>
                 {
-                    b.HasOne("User_Management_System.PostgreSqlModels.Item", "Item")
-                        .WithMany()
-                        .HasForeignKey("ItemUniqueId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
                     b.HasOne("User_Management_System.PostgreSqlModels.Service", "Service")
                         .WithMany()
-                        .HasForeignKey("ServiceUniqueId")
+                        .HasForeignKey("ServiceId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.Navigation("Item");
-
-                    b.Navigation("Service");
-                });
-
-            modelBuilder.Entity("User_Management_System.PostgreSqlModels.Item", b =>
-                {
-                    b.HasOne("User_Management_System.PostgreSqlModels.Service", "Service")
-                        .WithMany()
-                        .HasForeignKey("ServiceId");
 
                     b.Navigation("Service");
                 });

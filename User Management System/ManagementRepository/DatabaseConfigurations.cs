@@ -45,21 +45,12 @@ namespace User_Management_System.ManagementRepository
                 if (Project.TypeOfDatabase == TypeOfDatabase.PostgreSql)
                 {
                     _psqlcontext = configurePostgreSqlDbContext(Project.ConnectionString);
-
-                    if (Project.MigrateDatabase == TrueFalse.True)
-                        return MigratePostgreSqlDataBase(_psqlcontext);
-
-                    return true;
-
+                    return MigratePostgreSqlDataBase(_psqlcontext);
                 }
                 else if (Project.TypeOfDatabase == TypeOfDatabase.MicrosoftSqlServer)
                 {
                     _mssqlcontext = configureMicrosoftSqlServerDbContext(Project.ConnectionString);
-
-                    if (Project.MigrateDatabase == TrueFalse.True)
-                        return MigrateMicrosoftSqlServerDataBase(_mssqlcontext);
-
-                    return true;
+                    return MigrateMicrosoftSqlServerDataBase(_mssqlcontext);
                 }
                 if (Project.TypeOfDatabase == TypeOfDatabase.MongoDb)
                 {

@@ -53,6 +53,7 @@
 
         public const string Create = "create";
 
+        public const string MigrateDatabase = "migratedatabase";
 
         public const string Update = "update";
 

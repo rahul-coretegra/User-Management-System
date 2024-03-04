@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using SharpCompress.Common;
 using User_Management_System.ManagementModels;
 using User_Management_System.ManagementModels.EnumModels;
 using User_Management_System.ManagementRepository.IManagementRepository;
@@ -57,14 +58,50 @@ namespace User_Management_System.Controllers.ManagementControllers
             {
                 if (ModelState.IsValid)
                 {
+                    var inDb = await _management.Projects.FirstOrDefaultAsync(x=>x.ProjectName == Project.ProjectName || x.ConnectionString == Project.ConnectionString);
+
+                    if (inDb != null)
+                        return BadRequest(new { message = "Exists" });
+
                     Project.ProjectUniqueId = _management.UniqueId();
-                    Project.Status = TrueFalse.True;
-                    var result = _dbContextConfigurations.establishDbConnection(Project);
+                    Project.MigrateDatabase = TrueFalse.False;
+                    Project.Status = TrueFalse.False;                 
+                    await _management.Projects.AddAsync(Project);
+                    return Ok(new { message = "Created" });                
+                }
+                else
+                    return BadRequest(new { message = "BadRequest" });
+            }
+            catch (Exception ex)
+            {
+                throw new Exception(ex.Message, ex);
+            }
+        }
+
+        [HttpPut(SDRoutes.MigrateDatabase)]
+        public async Task<IActionResult> MigrateDatabase(string ProjectUniqueId)
+        {
+            try
+            {
+                if (ModelState.IsValid)
+                {
+                    var projectInDb = await _management.Projects.FirstOrDefaultAsync(p => p.ProjectUniqueId == ProjectUniqueId);
+
+                    if (projectInDb == null)
+                        return NotFound(new { message = "Not Found" });
+
+                    var result = _dbContextConfigurations.establishDbConnection(projectInDb);
 
                     if (result == true)
                     {
-                        await _management.Projects.AddAsync(Project);
-                        return Ok(new { message = "Created" });
+                        await _management.Projects.UpdateAsync(projectInDb.ProjectUniqueId, async entity =>
+                        {
+                            entity.MigrateDatabase = TrueFalse.True;
+                            entity.Status = TrueFalse.True;
+                            await Task.CompletedTask;
+                        });
+                        return Ok(new { message = "Updated" });
+
                     }
                     else
                     {

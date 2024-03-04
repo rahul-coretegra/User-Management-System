@@ -12,8 +12,8 @@ using User_Management_System.MicrosoftSqlServerConfigurations;
 namespace User_Management_System.Migrations.MicrosoftSqlServerApplicationDb
 {
     [DbContext(typeof(MicrosoftSqlServerApplicationDbContext))]
-    [Migration("20240302065005_Update-configureServicemodel")]
-    partial class UpdateconfigureServicemodel
+    [Migration("20240304102221_AddIntital")]
+    partial class AddIntital
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
